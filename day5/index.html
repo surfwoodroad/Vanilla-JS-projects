@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Password Visibility - Multiple Forms</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 40em;
+			width: 88%;
+      background-color: rgba(144,238,144, .5);
+  font-family: "Open Sans", sans-serif;
+		}
+
+.wrap {
+  padding: 0 1.5em;
+  border: #333 solid 1px;
+  border-radius: 6px;
+  background-color: rgba(255,255,255, .5);
+}
+
+		label {
+			display: block;
+			width: 100%;
+		}
+
+		input {
+			margin-bottom: 1em;
+      padding: 6px 6px 5px;
+      font-size: 1em;
+		}
+
+/* just messing around */
+		[type="checkbox"] {
+			margin-bottom: 0;
+			margin-right: 0.25em;
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: #fff;
+      border: 1px solid #cacece;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05);
+      padding: 9px;
+      border-radius: 3px;
+      display: inline-block;
+      position: relative;
+      top: 4px;
+      width: 1.5em;
+      height: 1.5em;
+		}
+    [type="checkbox"]:checked {
+      background-color: #e9ecee;
+      border: 1px solid #adb8c0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+      color: #99a1a7;
+    }
+    [type="checkbox"]:checked:after {
+      content: '\2714';
+      font-size: 1.35em;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #333;
+    }
+    .btn-submit {
+        border: #333 solid 1px;
+        border-radius: 4px;
+        padding: 6px 12px;
+        background-color: darkgreen;
+        color: #fff;
+        font-size: 1em;
+    }
+	</style>
+</head>
+<body>
+<div class="wrap">
+	<h1>Password Visibility - Multiple Forms</h1>
+
+	<h2>Change Username</h2>
+
+	<p>Enter your username and password to change your username.</p>
+
+	<form>
+		<div>
+			<label for="username">Username</label>
+			<input type="text" name="username" id="username">
+		</div>
+
+		<div>
+			<label for="password">Password</label>
+			<input type="password" data-type="password" name="password" id="password">
+		</div>
+
+		<div>
+			<label for="show-password">
+				<input type="checkbox" name="show-password" id="show-password">
+				Show password
+			</label>
+		</div>
+
+		<p>
+			<button type="submit" class="btn-submit">Change Username</button>
+		</p>
+	</form>
+
+	<h2>Change Password</h2>
+
+	<p>Enter your current password and new password below.</p>
+
+	<form>
+		<div>
+			<label for="current-password">Current Password</label>
+			<input type="password" data-type="password" name="current-password" id="current-password">
+		</div>
+
+		<div>
+			<label for="new-password">New Password</label>
+			<input type="password" data-type="password" name="new-password" id="new-password">
+		</div>
+
+		<div>
+			<label for="show-passwords">
+				<input type="checkbox" name="show-passwords" id="show-passwords">
+				Show passwords
+			</label>
+		</div>
+
+		<p>
+			<button type="submit" class="btn-submit">Change Passwords</button>
+		</p>
+    </form>
+    
+</div>
+
+	<script>
+		/**
+ * Element.matches() polyfill (simple version)
+ * https://developer.mozilla.org/en-US/docs/Web/API/Element/matches#Polyfill
+ */
+if (!Element.prototype.matches) {
+	Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+}
+        function getParentForm(el) {
+            var parentForm;
+            return parentForm = el.closest('form');
+        }
+
+        function getPwdInputs(form) {
+            var inputsArr = Array.prototype.slice.call(form.querySelectorAll('[data-type=password]'));
+            return inputsArr;
+        }
+
+        function togglePwd(el, isChecked) {
+            isChecked ? el.type = 'text' : el.type = 'password';
+        }
+
+        function showHidePassword(theTarget, isChecked) {
+            var form = getParentForm(theTarget);
+            if (form) {
+                var inputsArr = getPwdInputs(form);
+
+                inputsArr.forEach(function(el) {
+                    togglePwd(el, isChecked);
+                });
+            }
+            
+        }
+
+        window.addEventListener('change', function(e) {
+            var theTarget = e.target;
+
+            if (theTarget.matches('[type=checkbox]')) {
+                var isChecked = theTarget.checked;
+                showHidePassword(theTarget, isChecked);
+            }
+        });
+
+        window.addEventListener('click', function(e) {
+            var theTarget = e.target;
+
+            if (theTarget.matches('[type=submit]')) {
+                e.preventDefault();
+                console.log('😛');
+            }
+        });
+
+
+	</script>
+</body>
+</html>
