@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Character Count</title>
+
+	<style type="text/css">
+		body {
+			margin: 0 auto;
+			background-color: rgba(144,238,144, .5);
+			border: 6px dashed rgba(144,238,144, .75);
+			font-family: "Open Sans", sans-serif;
+			height: calc(100vh - 12px);
+		}
+
+		.wrap {
+			max-width: 40em;
+			width: 88%;
+			margin: 1.5em auto;
+			padding: 0 1.5em;
+			border: #333 solid 1px;
+			border-radius: 6px;
+			background-color: rgba(255,255,255, .5);
+		}
+
+		label {
+			display: block;
+			width: 100%;
+		}
+
+		textarea {
+			min-height: 16em;
+			width: 100%;
+			font-size: 1em;
+		}
+		#character-count {
+			font-size: 1.5em;
+			font-style: italic;
+			text-shadow: 2px 2px 2px rgba(0, 0, 0, .25), 2px 2px 2px rgba(255, 255, 255, 1);
+		}
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<h1>Character Count</h1>
+
+		<label for="text">Enter your text below.</label>
+        <textarea id="text">Mary had a little lamb -- Hold up! Drop a phat beat on dis!</textarea>
+	
+        <p aria-live="polite" role="status">You've written <strong><span id="word-count">0</span> words</strong> and <strong><span id="character-count">0</span> characters</strong>.</p>
+        
+        <p>Sorry, I don't have an actual phat beat on hand, but it was kinda meant in the spirit of <a href="http://www.harkavagrant.com/index.php?id=125" target="_blank">this by Kate Beaton (see the one called Duck Comics)</a>.</p>
+	</div>
+	
+
+	<script>
+		
+		var theTextarea = document.querySelector('#text');
+		var textCount = document.querySelector('#character-count');
+		var wordCount = document.querySelector('#word-count');
+
+		function updateTextCount() {
+			textCount.textContent = theTextarea.value.length;
+		}
+
+		function updateWordCount() {
+			// var words = theTextarea.value.split(' ');
+			// var words = theTextarea.value.trim().split(' '); 
+            // the above works fine, except for line breaks with no space
+            // but trying another method with regex
+			var words = theTextarea.value.split(/[\n\r\s]+/g);
+            words = words.filter(function (item) {
+                return item.length >= 1
+            })
+			wordCount.textContent = words.length;
+		}
+
+		function inputHandler(e) {
+			if (e.target !== theTextarea) return;
+            updateTextCount();
+            updateWordCount();
+		}
+
+		//theTextarea.addEventListener('input', updateTextCount);
+        window.addEventListener('input', inputHandler);
+
+        // run on page load for content that is already there:
+        updateWordCount();
+        updateTextCount();
+
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style type="text/css">
+		body {
+			margin: 0 auto;
+			background-color: rgba(144,238,144, .5);
+			border: 6px dashed rgba(144,238,144, .75);
+			font-family: "Open Sans", sans-serif;
+			height: calc(100vh - 12px);
+		}
+
+		.wrap {
+			max-width: 40em;
+			width: 88%;
+			margin: 1.5em auto;
+			padding: 0 1.5em;
+			border: #333 solid 1px;
+			border-radius: 6px;
+			background-color: rgba(255,255,255, .5);
+		}
+        blockquote {
+            border: #333 solid 1px;
+            border-radius: 3px;
+            padding: 1rem;
+            background-color: white;
+            color: darkblue;
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, .15);
+        }
+        button {
+            font-size: 1rem;
+        }
+        .star {
+            position: relative;
+            top: -4px;
+            font-size: .9375rem;
+        }
+        .star1 {
+            left: 1px;
+            padding-left: 4px;
+        }
+        .star2 {
+            left: 2px;
+            padding-right: 4px;
+        }
+           
+	</style>
+</head>
+<body>
+    <div class="wrap">
+        <p>
+            <span class="star star1" aria-hidden="true">⭐</span>Ron Swanson says<span class="star star2" aria-hidden="true">⭐</span>
+        </p>
+        <blockquote data-ronsWisdom aria-live="polite">Summoning Ron...</blockquote>
+        <!-- Dear frozen yogurt you are the celery of desserts. Be ice cream or be nothing. Zero stars.  -->
+        <p>
+            <button data-ronFix><strong>I <em>Need</em> More Ron</strong></button>
+        </p>
+    </div>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default%2Cfetch%2CNodeList.prototype.forEach"></script>
+    <script>
+        var endpoint = 'https://ron-swanson-quotes.herokuapp.com/v2/quotes';
+        var vesselForRonsWords = document.querySelector('[data-ronsWisdom]');
+        var ronFixBtn = document.querySelector('[data-ronFix]');
+        var quotesArr = []; // store quotes in here
+        var quotesMax = 50; // max length before we start chopping off the first one
+        
+        function displayWisdom(data) {
+            // display the words of Ron Swanson
+            // put quote in variable since it will be used in several cases
+            var newQuote = data[0];
+
+            // check to see if quote is already in array
+            var isRepeat = quotesArr.indexOf(newQuote);
+            console.log(isRepeat);
+
+            // not a repeat
+            if (isRepeat === -1){
+                addToArray(newQuote, quotesArr, quotesMax);
+                showText(newQuote);
+
+            // we have a repeat, so get new quote
+            } else {
+                getRon();
+            }
+        }
+
+        function showText(newQuote) {
+            vesselForRonsWords.textContent = newQuote;
+        }
+
+        function addToArray(newValue, theArray, quotesMax) {
+            if (theArray.length < quotesMax) {
+                theArray.push(newValue);
+            } else {
+                theArray.shift();
+                // console.log('shifted!');
+                theArray.push(newValue);
+            }
+
+            // here's another way:
+            /*if (theArray.length === quotesMax) {
+                theArray.shift();
+            }
+            theArray.push(newValue);*/
+        }
+
+        function rendThyGarments(err) {
+            // There was an error
+            console.warn('#FAIL!!!!', err);
+            // hold back the tears and don't break something
+            showText("AAUUGGGGHH! He doesn't say anything - this was a #FAIL!!!");
+        }
+
+        function getRon() {
+            fetch(endpoint).then(function (response) {
+                // The API call was successful!
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response);
+                }
+            }).then(function (data) {
+                displayWisdom(data);
+                // 'data' is the JSON from our response
+            }).catch(function (err) {
+                rendThyGarments(err)
+            });
+        }
+
+        getRon();
+        ronFixBtn.addEventListener('click', getRon);
+
+
+    </script>
+</body>
+</html>

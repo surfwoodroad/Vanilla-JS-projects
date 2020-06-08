@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Monsters!</title>
+<meta name="viewport" content="width=device-width">
+
+<style type="text/css">
+    body {
+        margin: 1em auto;
+        max-width: 40em;
+        width: 88%;
+    }
+    /**
+        * A simple grid layout
+        */
+    .row {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        text-align: center;
+    }
+    @media screen and (max-width: 760px) {
+        body {
+            width: 96%;
+        }
+        .row {
+            grid-template-columns: auto auto;
+        }
+    }
+
+    .grid {
+        min-height: 6em;
+        padding: 1em;
+    }
+
+
+    /**
+        * Make sure images scale
+        */
+    img {
+        height: auto;
+        max-width: 100%;
+    }
+    .btn__monster {
+        padding: .5rem 1.5rem .4rem;
+        background-color: #1def1d;
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1;
+        text-transform: uppercase;
+        border: #333 solid 1px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    figcaption {
+        margin-top: .5rem;
+    }
+    .monster_name {
+        text-transform: capitalize;
+    }
+
+    .monster_img {
+        animation: fadeIn 1s;
+    }
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
+</head>
+<body>
+<center>
+<h1>Monsters!</h1>
+
+<div id="app">
+    <p>Loading monsters...</p>
+</div>
+
+<p>
+    <button class="btn__monster" data-monsterShuffle>Monsters, rearrange yourselves!</button>
+</p>
+
+<footer>
+    <hr>
+    <p class="text-small text-muted">Icons by <a href="https://thenounproject.com/term/door/311732/">Jamie Dickinson</a>, <a href="https://thenounproject.com/term/monster/184225/">Nicky Knicky</a>, <a href="https://thenounproject.com/term/monster/1510400/">Alvaro Cabrera</a>, <a href="https://thenounproject.com/term/monster/28460/">Eliricon</a>, <a href="https://thenounproject.com/term/monster/82823/">April Yang</a>, <a href="https://thenounproject.com/term/monster/1062009/">tk66</a>, <a href="https://thenounproject.com/term/monster/24990/">Alex WaZa</a>, <a href="https://thenounproject.com/term/monster/37212/">Husein Aziz</a>, <a href="https://thenounproject.com/term/monster/2236082">iconcheese</a>, and <a href="https://thenounproject.com/term/socks/38451/">Yazmin Alanis</a>.</p>
+</footer>
+<div id="some-id"></div>
+</center>
+<script>
+    /**
+        * Randomly shuffle an array
+        * https://stackoverflow.com/a/2450976/1293256
+        * @param  {Array} array The array to shuffle
+        * @return {String}      The first item in the shuffled array
+        */
+    var shuffle = function (array) {
+
+        var currentIndex = array.length;
+        var temporaryValue, randomIndex;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+
+    };
+
+    const monsters = [
+        {
+            image: 'monster1',
+            alt: 'Small, round, gold monster with no limbs.'
+        },
+        {
+            image: 'monster2',
+            alt: 'Big gold monster with one big eye, long thin arms, and long thin legs.'
+        },
+        {
+            image: 'monster3',
+            alt: 'Green monster with a large, vertical mouth running through its body.'
+        },
+        {
+            image: 'monster4',
+            alt: 'Red monster with four arms and two horns.'
+        },
+        {
+            image: 'monster5',
+            alt: 'Short green monster with one big eye, a spiky head who looks sad.'
+        },
+        {
+            image: 'monster6',
+            alt: 'Green monster with one eye and a triangle body doing a handstand.'
+        },
+        {
+            image: 'monster7',
+            alt: 'Cute purple monster with one big eye and tentacles for arms.'
+        },
+        {
+            image: 'monster8',
+            alt: 'Purple monster with an egg-shaped body, no legs and one eye.'
+        },
+        {
+            image: 'monster9',
+            alt: 'Blue monster that looks like a concerned ant.'
+        },
+        {
+            image: 'monster10',
+            alt: 'Blue monster with no arms, a round body, eyes on stalks, and a magnificent mustache.'
+        },
+        {
+            image: 'monster11',
+            alt: 'Black monster with yeti energy and a big smile.'
+        },
+        {
+            image: 'sock',
+            alt: 'Ah! A pair of socks! Code twenty three nineteen!'
+        }
+    ];
+
+    var mixedMonsters = shuffle(monsters.slice());
+    var el = document.querySelector('#app');
+    var btn_shuffleMonsters = document.querySelector('[data-monsterShuffle]')
+
+    function displayMonsters(monster_arr) {
+
+        // display the top stories
+        var hdr = '<h2 class="hdr_monsters">Meet a few of my friends</h2>';
+
+        el.innerHTML = hdr + '<div class="row">' + 
+            monster_arr.map(function(monster) {
+                var monsterTxt;
+                monster.image.indexOf('monster') !== -1 ? monsterTxt = monster.image.replace('monster', 'monster ') :  monsterTxt = monster.image;
+
+                var imgSrc = 'images/' + monster.image + '.svg';
+                var figCap = 'Introducing <span class="monster_name">' + monsterTxt + '</span>';
+
+                return '<div class="grid"><figure><img src="' + imgSrc + '" alt="' + monster.alt + '" class="monster_img" /><figcaption>' + figCap + '</figcaption></figure></div>';
+        }).join('') + '</div>';
+    }
+
+    btn_shuffleMonsters.addEventListener('click', function() {
+        mixedMonsters = shuffle(monsters.slice());
+        displayMonsters(mixedMonsters);
+    })
+    displayMonsters(mixedMonsters);
+    
+
+    // testing innerHTML vs appendChild (or insertBefore)
+    var element = document.querySelector("#some-id");
+var newElement = document.createElement("p");
+newElement.textContent = "This is a paragraph";
+var nextElement = '<p>This is another paragraph</p>';
+var element3 = document.createElement('div');
+element3.innerHTML = "<p>This is the <strong>third</strong> paragraph attempt.</p>";
+element.appendChild(newElement);
+element.appendChild(newElement);
+element.appendChild(element3);
+
+</script>
+</body>
+</html>

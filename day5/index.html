@@ -141,8 +141,8 @@ if (!Element.prototype.matches) {
 	Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
 }
         function getParentForm(el) {
-            var parentForm;
-            return parentForm = el.closest('form');
+            //var parentForm;
+            return /* parentForm = */ el.closest('form');
         }
 
         function getPwdInputs(form) {

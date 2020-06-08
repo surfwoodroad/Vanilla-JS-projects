@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Project Template</title>
+
+<style type="text/css">
+    *,
+    *:before,
+    *:after {
+        box-sizing: border-box;
+    }
+    body {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 40em;
+        width: 88%;
+    }
+    #pirate-speak {
+        margin-bottom: 1em;
+    }
+    .hide {
+        display: none;
+    }
+    .divider {
+        margin: 3rem auto;
+        width: 96%;
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    input,
+    textarea {
+        margin-bottom: 2em;
+        width: 100%;
+    }
+
+    textarea {
+        height: 12em;
+    }
+    #preview-content {
+        color: darkgreen
+    }
+
+    /**
+        * Simple Grid
+        * https://gridbyexample.com/examples/example37/
+        */
+
+    @media (min-width: 40em) {
+        .grid {
+            display: grid;
+            grid-gap: 2em;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="pirate-speak">
+    Hands Letter of Marque chantey man-of-war spanker. Barbary Coast take a caulk rutters cog line. Splice the main brace chantey port parrel careen.
+</div>
+
+<script>
+    // Considerations
+    // Should the button be part of the initial markup, or created with JavaScript?
+    // How would someone using a screen reader know what content goes with the button?
+
+    // get the content element
+    var content = document.querySelector('#pirate-speak');
+
+    var txtShow = "Show Content";
+    var txtHide = "Hide Content";
+
+    var newBtn = document.createElement('button');
+    newBtn.textContent = 'Hide Text';
+    content.insertAdjacentElement('afterend', newBtn);
+
+
+    function showHideContent(content) {
+        if (content.classList.contains('hide')) {
+            content.classList.remove('hide')
+        } else {
+            content.classList.add('hide')
+        }
+    }
+    function changeBtnText(newBtn) {
+        var text = newBtn.textContent;
+        // here we'll use a ternary expression
+        text.includes('Hide') ? newBtn.textContent = txtShow : newBtn.textContent = txtHide;
+    }
+
+    newBtn.addEventListener('click', function() {
+        showHideContent(content);
+        changeBtnText(newBtn);
+    });
+    
+</script>
+
+
+<hr class="divider" />
+
+<h1>Mirror Test</h1>
+
+<div class="grid">
+    <div class="src">
+        <label for="content2">Content</label>
+        <textarea id="content2"></textarea>
+    </div>
+    <div class="dest">
+        <strong>Preview</strong>
+        <div id="preview-content2"><pre></pre></div>
+    </div>
+    <div class="src">
+        <label for="content3">Content</label>
+        <textarea id="content3"></textarea>
+    </div>
+    <div class="dest">
+        <strong>Preview</strong>
+        <div id="preview-content3"><pre></pre></div>
+    </div>
+</div>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/marked/1.1.0/marked.min.js"></script>
+<script>
+    //Considerations
+    // How do you handle line breaks?
+    // How can you structure the script to support additional fields without having to change the code?
+
+// original:
+    /* var inputTextSrc = document.querySelector('#content2');
+    var mirrorTextDest = document.querySelector('#preview-content2');
+
+    function gazeIntoMirror(src, dest) {
+        console.log(src);
+        dest.querySelector('pre').textContent = src;
+    }
+
+    inputTextSrc.addEventListener('input', function() {
+        gazeIntoMirror(this.value, mirrorTextDest);
+    }); */
+
+    var grid = document.querySelector('.grid');
+
+    function getDest(txtSrc) {
+        var destination = txtSrc.parentNode.nextElementSibling;
+        return destination;
+    }
+    function updateMirror(txtSrc, destination) {
+        var txt = txtSrc.value;
+        //destination.querySelector('pre').textContent = txt;
+        destination.querySelector('pre').innerHTML = marked(txt);
+
+    }
+
+    grid.addEventListener('input', function() {
+        var txtSrc = event.target;
+        var destination = getDest(txtSrc);
+        updateMirror(txtSrc, destination);
+    })
+    
+</script>
+
+</body>
+</html>

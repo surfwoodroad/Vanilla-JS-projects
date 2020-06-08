@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New York Times - Top Food Stories</title>
+
+    <style type="text/css">
+		body {
+			margin: 0 auto;
+			background-color: rgba(144,238,144, .5);
+			border: 6px dashed lightsteelblue;
+			font-family: "Open Sans", sans-serif;
+			min-height: calc(100vh - 12px);
+		}
+
+		.wrap {
+			max-width: 40em;
+			width: 88%;
+			margin: 1.5em auto;
+			padding: 1em 1.5em;
+			border: #333 solid 1px;
+			border-radius: 6px;
+			background-color: rgba(255,255,255, .5);
+		}
+
+        .hdr--stories {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .top_stories {
+            margin-bottom: 2rem;
+        }
+
+        .top_stories li {
+            margin-bottom: .75rem;
+        }
+        .author {
+            font-size: .8375rem;
+            font-style: italic;
+        }
+        .author:before {
+            content: '\A';
+            display: block;
+            width: 100%;
+        }
+
+        .capital {
+            text-transform: capitalize;
+        }
+        time {
+            display: inline;
+            font-size: .8375rem;
+            font-style: italic;
+        }
+           
+	</style> 
+</head>
+<body>
+    <div class="wrap">
+        <div id="app">
+            <div id="category_food">
+                <a href="https://www.nytimes.com/section/food" target="_blank">See the latest NY Times Food Stories</a>
+            </div>
+            <div id="category_arts">
+                <a href="https://www.nytimes.com/section/arts" target="_blank">See the latest NY Times Arts Stories</a>
+            </div>
+            <div id="category_science">
+                <a href="https://www.nytimes.com/section/Science" target="_blank">See the latest NY Times Science Stories</a>
+            </div>
+            <div id="category_technology">
+                <a href="https://www.nytimes.com/section/technology" target="_blank">See the latest NY Times Tech Stories</a>
+            </div>
+            <div id="category_nyregion">
+                <a href="https://www.nytimes.com/section/technology" target="_blank">See the latest NY Times New York Stories</a>
+            </div>
+            <div id="category_us">
+                <a href="https://www.nytimes.com/section/technology" target="_blank">See the latest NY Times U.S. Stories</a>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default%2Cfetch%2CNodeList.prototype.forEach"></script>
+    <script>
+        var sections = [{searchName: 'us', displayName: 'U.S.'}, {searchName: 'nyregion', displayName: 'N.Y.'}, {searchName: 'science', displayName: 'Science'}, {searchName: 'technology', displayName: 'Tech'}, {searchName: 'food', displayName: 'Food'}, {searchName: 'arts', displayName: 'Arts'}];
+        
+        var endpoint_part1 = 'https://api.nytimes.com/svc/topstories/v2/';
+        var endpoint_part2 = '.json?api-key=x5Pioa9xt20NI2Yt8o83qubDkG8SJAdL';
+        var numStories = 5;
+
+
+        // we will build the querySelector for each category with this
+        var catPartial = "#category_";
+
+        var main_elem = document.querySelector('#app');
+
+        function getAuthor(story) {
+            if (story.byline === '') {
+                var author = '<span class="author">NY Times</span>';
+            } else {
+                var author = '<span class="author">' + story.byline + '</span>';
+            }
+            return author
+        }
+
+        function getDate(story) {
+            return "<time datetime='" + story.updated_date + "'>" + new Date(story.updated_date).toLocaleString() + "</time>";
+        }
+
+        function displayTopStories(data, searchName, displayName) {
+            // just use the first 5 stories
+            var stories = data.results.slice(0, numStories);
+            // get the element to populate
+            var elem = document.querySelector(catPartial + searchName);
+
+            // display the top stories
+            elem.innerHTML = '<h2 class="hdr--stories">Current Top 10 NY Times ' + displayName + ' Stories</h2><ul class="top_stories">' + stories.map(function(story) {
+                
+                // not all articles have a byline, 
+                // so we put in a default
+                var author = getAuthor(story);
+                var pubDate = getDate(story);
+
+                return '<li><a href="' + story.url + '" target="_blank">' + story.title + '</a>' + author + '<span class="time"> - ' + pubDate + '</span></li>';
+            }).join('') + '</ul>';
+        }
+
+        function displayError(msg, searchName) {
+            var errorContainer = document.querySelector(catPartial + searchName);
+            var errorText = document.createElement('p');
+            errorText.innerHTML = msg;
+
+            if (errorContainer) {
+                errorContainer.appendChild(errorText);
+            } else {
+                main_elem.appendChild(errorText);
+            }
+        }
+
+        function fetchFail(err, searchName, displayName) {
+            // There was an error
+            console.warn('#FAIL!!!!', err);
+            // hold back the tears and don't break something
+            displayError('Sorry, there was an error getting the ' + displayName + ' category. Please try again later.', searchName);
+        }
+
+        function getTopStories(endpoint, searchName, displayName) {
+                
+            fetch(endpoint).then(function (response) {
+                // The API call was successful!
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response);
+                }
+            }).then(function (data) {
+                //console.log('the cat is: ' + category)
+                displayTopStories(data, searchName, displayName);
+                // 'data' is the JSON from our response
+            }).catch(function (err) {
+                //console.log('the cat is: ' + category)
+                fetchFail(err, searchName, displayName)
+            });
+        }
+
+        function getCategorStories(arr) {
+            arr.forEach(function(category) {
+                // testing it with destructuring
+                const {searchName, displayName} = category; 
+                //var displayName = category.displayName;
+                //var searchName = category.searchName;
+                var endpoint = endpoint_part1 + searchName + endpoint_part2;
+                getTopStories(endpoint, searchName, displayName);
+            });
+        }
+        // run all the fetches on the categories array defined at top
+        getCategorStories(sections);
+
+
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New York Times - Top Food Stories</title>
+
+    <style type="text/css">
+		body {
+			margin: 0 auto;
+			background-color: rgba(144,238,144, .5);
+			border: 6px dashed lightsteelblue;
+			font-family: "Open Sans", sans-serif;
+			min-height: calc(100vh - 12px);
+		}
+
+		.wrap {
+			max-width: 40em;
+			width: 88%;
+			margin: 1.5em auto;
+			padding: 1em 1.5em;
+			border: #333 solid 1px;
+			border-radius: 6px;
+			background-color: rgba(255,255,255, .5);
+		}
+
+        .hdr--stories {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .top_stories {
+            margin-bottom: 2rem;
+        }
+
+        .top_stories li {
+            margin-bottom: .75rem;
+        }
+        .author {
+            display: block;
+            font-size: .8375rem;
+            font-style: italic;
+        }
+
+        .capital {
+            text-transform: capitalize;
+        }
+           
+	</style>
+</head>
+<body>
+    <div class="wrap">
+        <div id="app">
+            <div id="category_food">
+                <a href="https://www.nytimes.com/section/food" target="_blank">See the latest NY Times Food Stories</a>
+            </div>
+            <div id="category_arts">
+                <a href="https://www.nytimes.com/section/arts" target="_blank">See the latest NY Times Arts Stories</a>
+            </div>
+            <div id="category_science">
+                <a href="https://www.nytimes.com/section/Science" target="_blank">See the latest NY Times Science Stories</a>
+            </div>
+            <div id="category_technology">
+                <a href="https://www.nytimes.com/section/technology" target="_blank">See the latest NY Times Tech Stories</a>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default%2Cfetch%2CNodeList.prototype.forEach"></script>
+    <script>
+        
+        var endpoint_part1 = 'https://api.nytimes.com/svc/topstories/v2/';
+        var endpoint_part2 = '.json?api-key=x5Pioa9xt20NI2Yt8o83qubDkG8SJAdL';
+
+        var categories = ['food', 'arts', 'science', 'technology'];
+        var catPartial = "#category_";
+
+        var main_elem = document.querySelector('#app');
+
+        function getAuthor(story) {
+            if (story.byline === '') {
+                    var author = '';
+                } else {
+                    var author = '<span class="author">' + story.byline + '</span>';
+                }
+            return author
+        }
+
+        function displayTopStories(data, category) {
+            var stories = data.results.slice(0, 5);
+            var elem = document.querySelector(catPartial + category);
+
+            // display the top stories
+            elem.innerHTML = '<h2 class="hdr--stories">Current Top 10 NY Times <span class="capital">' + category + '</span> Stories</h2><ul class="top_stories">' + stories.map(function(story) {
+
+                // not all articles have a byline, 
+                // so we don't want the extra <span> in there 
+                // since it's display: block;
+                var author = getAuthor(story);
+
+                return '<li><a href="' + story.url + '" target="_blank">' + story.title + '</a>' + author + '</li>';
+            }).join('') + '</ul>';
+        }
+
+        function displayError(msg, category) {
+            var errorContainer = document.querySelector(catPartial + category);
+            var errorText = document.createElement('p');
+            errorText.innerHTML = msg;
+
+            if (errorContainer) {
+                errorContainer.appendChild(errorText);
+            } else {
+                main_elem.appendChild(errorText);
+            }
+        }
+
+        function fetchFail(err, category) {
+            // There was an error
+            console.warn('#FAIL!!!!', err);
+            // hold back the tears and don't break something
+            displayError('Sorry, there was an error getting the <span class="capital">' + category + '</span> category. Please try again later.', category);
+        }
+
+        function getTopStories(endpoint, category) {
+                
+            fetch(endpoint).then(function (response, category) {
+                // The API call was successful!
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return Promise.reject(response);
+                }
+            }).then(function (data) {
+                //console.log('the cat is: ' + category)
+                displayTopStories(data, category);
+                // 'data' is the JSON from our response
+            }).catch(function (err) {
+                //console.log('the cat is: ' + category)
+                fetchFail(err, category)
+            });
+        }
+
+        function getCategorStories(arr) {
+            arr.forEach(function(category) {
+                var endpoint = endpoint_part1 + category + endpoint_part2;
+                getTopStories(endpoint, category);
+            });
+        }
+        // run all the fetches on the categories array defined at top
+        getCategorStories(categories);
+
+
+    </script>
+    
+</body>
+</html>
