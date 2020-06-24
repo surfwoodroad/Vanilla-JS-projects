@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Helper Library</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 40em;
+			width: 88%;
+		}
+
+		.btn-blue {
+			background-color: #0088cc;
+			color: #ffffff;
+		}
+
+		.btn-purple {
+			background-color: rebeccapurple;
+			color: #ffffff;
+		}
+	</style>
+</head>
+<body>
+
+	<h1>Helper Library</h1>
+
+	<p>All of the fun here happens in the console.</p>
+
+	<p>
+		<button class="btn-blue" id="button-1">Button 1</button>
+		<button class="btn-blue" id="button-2">Button 2</button>
+		<button class="btn-blue" id="button-3">Button 3</button>
+	</p>
+
+	<script>
+		
+		var helpers = (function() {
+
+			var nodeListToArray = function(list) {
+				return Array.prototype.slice.call(list);
+			}
+
+			var methods = {};
+
+			methods.makeNodeListToArray = function(nl) {
+				return nodeListToArray(nl)
+			}
+			
+			methods.getFirstElement = function(selector) {
+				return document.querySelector(selector);
+			}
+			
+			methods.getAllMatchingElements = function(selector) {
+				var elements = document.querySelectorAll(selector);
+				return elements.length > 0 ? methods.makeNodeListToArray(elements) : console.warn('Your selector "' + selector + '" returns no matching elements.')
+			}
+
+			methods.addClassToMatchingElements = function(selector, cssClass) {
+				var elements = methods.getAllMatchingElements(selector);
+				if ( !elements ) return false;
+
+				elements.forEach(function(element) {
+					element.classList.add(cssClass);
+				});
+			}
+
+			methods.removeClassFromMatchingElements = function(selector, cssClass) {
+				var elements = methods.getAllMatchingElements(selector);
+				if ( !elements.length > 0) return false;
+
+				elements.forEach(function(element) {
+					element.classList.remove(cssClass);
+				});
+			}
+
+			return methods
+		})();
+
+		/**
+		 * Public methods:
+		 * helpers.makeNodeListToArray : pass a nodelist in, get an array returned
+		 * helpers.getFirstElement : pass in a css selector, get back first matching element
+		 * helpers.getAllMatchingElements : pass in a css selector, get an array returned
+		 * helpers.addClassToMatchingElements : pass in a css selector, and the class to add
+		 * helpers.removeClassFromMatchingElements : pass in a css selector, and the class to remove
+		*/
+
+		var allButtons = document.querySelectorAll('button');
+		console.log(allButtons);
+
+		allButtons = helpers.makeNodeListToArray(allButtons);
+		console.log(allButtons);
+
+		var firstButton = helpers.getFirstElement('button');
+		console.log(firstButton);
+
+		var noButtons = helpers.getAllMatchingElements('buttons'); 
+		//because the element is 'button', not 'buttons'
+		console.log(noButtons);
+
+		helpers.addClassToMatchingElements('button', 'btn-purple');
+		console.log(helpers.getAllMatchingElements('button'));
+
+		helpers.removeClassFromMatchingElements('button', 'btn-purple');
+		console.log(helpers.getAllMatchingElements('button'));
+
+
+	</script>
+</body>
+</html>

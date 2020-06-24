@@ -114,8 +114,9 @@
     <script>
         var sections = [{searchName: 'us', displayName: 'U.S.'}, {searchName: 'nyregion', displayName: 'N.Y.'}, {searchName: 'science', displayName: 'Science'}, {searchName: 'technology', displayName: 'Tech'}, {searchName: 'food', displayName: 'Food'}, {searchName: 'arts', displayName: 'Arts'}];
         
-        var endpoint_part1 = 'https://api.nytimes.com/svc/topstories/v2/';
-        var endpoint_part2 = '.json?api-key=x5Pioa9xt20NI2Yt8o83qubDkG8SJAdL';
+        //var endpoint_part1 = 'https://api.nytimes.com/svc/topstories/v2/';
+        //var endpoint_part2 = '.json?api-key=x5Pioa9xt20NI2Yt8o83qubDkG8SJAdL';
+        var endpoint2_part1 = 'https://ancient-silence-e2a6.surfwoodroad.workers.dev?section='
         var numStories = 5;
 
 
@@ -227,8 +228,9 @@ function getCategoryStories(arr) {
         var displayName = category.displayName;
         var searchName = category.searchName;
         // build fetch path with search term
-        var endpoint = endpoint_part1 + searchName + endpoint_part2;
-        getTopStories(endpoint, searchName, displayName);
+        //var endpoint = endpoint_part1 + searchName + endpoint_part2;
+        var endpoint2 = endpoint2_part1 + searchName;
+        getTopStories(endpoint2, searchName, displayName);
     });
 }
         // run all the fetches on the categories array defined at top
