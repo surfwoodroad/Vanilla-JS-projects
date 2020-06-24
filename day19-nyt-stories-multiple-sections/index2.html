@@ -88,6 +88,7 @@
         
         var endpoint_part1 = 'https://api.nytimes.com/svc/topstories/v2/';
         var endpoint_part2 = '.json?api-key=x5Pioa9xt20NI2Yt8o83qubDkG8SJAdL';
+        var endpoint2_part1 = 'https://ancient-silence-e2a6.surfwoodroad.workers.dev?section='
         var numStories = 5;
 
 
@@ -171,8 +172,10 @@
                 const {searchName, displayName} = category; 
                 //var displayName = category.displayName;
                 //var searchName = category.searchName;
+                console.log(searchName)
                 var endpoint = endpoint_part1 + searchName + endpoint_part2;
-                getTopStories(endpoint, searchName, displayName);
+                var endpoint2 = endpoint2_part1 + searchName;
+                getTopStories(endpoint2, searchName, displayName);
             });
         }
         // run all the fetches on the categories array defined at top

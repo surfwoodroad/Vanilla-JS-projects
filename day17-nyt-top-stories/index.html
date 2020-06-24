@@ -85,11 +85,11 @@
             // There was an error
             console.warn('#FAIL!!!!', err);
             // hold back the tears and don't break something
-            showTopStories("Sorry, there was an error. Please try again later.");
+            displayTopStories("Sorry, there was an error. Please try again later.");
         }
 
         function getTopStories() {
-            fetch(endpoint).then(function (response) {
+            fetch('https://ancient-silence-e2a6.surfwoodroad.workers.dev?section=food').then(function (response) {
                 // The API call was successful!
                 if (response.ok) {
                     return response.json();

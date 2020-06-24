@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>DOM Manipulation Library</title>
+
+	<style type="text/css">
+		body {
+			margin: 0 auto;
+			background-color: rgba(144, 203, 238, 0.5);
+			border: 6px dashed lightsteelblue;
+			font-family: "Open Sans", sans-serif;
+			min-height: calc(100vh - 12px);
+		}
+
+		.wrap {
+			max-width: 40em;
+			width: 88%;
+			margin: 1.5em auto;
+			padding: 0 1.5em .5em;
+			border: #333 solid 1px;
+			border-radius: 6px;
+			background-color: rgba(255, 255, 255, 0.726);
+		}
+
+
+		.btn-blue {
+			background-color: #0088cc;
+			color: #ffffff;
+		}
+
+		.btn-purple {
+			background-color: rebeccapurple;
+			color: #ffffff;
+		}
+        .gray {
+            color: #333;
+        }
+        .red {
+            color: firebrick;
+        }
+        button.red {
+            background-color: whitesmoke;
+        }
+	</style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>DOM Manipulation Library</h1>
+
+        <p>All of the fun here happens in the console.</p>
+    
+        <p>
+            <button class="btn-blue" id="button-1">Button 1</button>
+            <button class="btn-blue" id="button-2">Button 2</button>
+            <button class="btn-blue" id="button-3">Button 3</button>
+        </p>
+    
+        <ul class="gray">
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+        </ul>
+    </div>
+
+	<script>
+		
+        var $DOM = (function() {
+
+            'use strict';
+
+            var Constructor = function(selector) {
+                if (selector === 'document') {
+                    this.elements = [document];
+                } else if (selector === 'window') {
+                    this.elements = [window];
+                } else {
+                    this.elements = document.querySelectorAll(selector);
+                }
+            }
+
+            Constructor.prototype.getItems = function() {
+                return Array.prototype.slice.call(this.elements) 
+            }
+
+            Constructor.prototype.getFirst = function() {
+                return this.elements[0];
+            }
+
+            Constructor.prototype.getLast = function() {
+                return this.elements[this.elements - 1];
+            }
+
+            Constructor.prototype.getFirstLast = function() {
+                var elements = [];
+                elements.push(this.getFirst());
+                elements.push(this.getLast());
+                return elements;
+            }
+
+            Constructor.prototype.addSingleClass = function(cssClass) {
+				var elements = this.getItems();
+
+				elements.forEach(function(element) {
+                    if (!element) return;
+					element.classList.add(cssClass);
+				});
+                return this;
+			}
+
+			Constructor.prototype.removeSingleClass = function(cssClass) {
+				var elements = this.getItems();
+
+				elements.forEach(function(element) {
+                    if (!element) return;
+					element.classList.remove(cssClass);
+				});
+                return this;
+			}
+
+            // return Constructor
+            /**
+            * Instantiate a new constructor
+            */
+            var instantiate = function (selector) {
+                return new Constructor(selector);
+            };
+
+            /**
+            * Return the constructor instantiation
+            */
+            return instantiate;
+
+        })();
+
+        /* var dml_1 = new $DOM('button');
+
+        var dml_1_btns = dml_1.getItems();
+        console.log(dml_1_btns);
+
+        var dml_1_first = dml_1.getFirst();
+        console.log(dml_1_first);
+
+        var dml_1_btns_first_last = dml_1.getFirstLast();
+        console.log('first, last: ',dml_1_btns_first_last)
+
+        dml_1.addSingleClass('btn-purple');
+
+        var dml_2 = new $DOM('ul');
+        dml_2.removeSingleClass('gray');
+        dml_2.addSingleClass('red'); */
+
+        // var btns = $DOM('button:nth-child(2)').getItems();
+        // console.log('btns: ',btns)
+
+        
+        // now with Instantiation, so we can use $DOM without new keyword
+
+        var dml_1 = $DOM('button');
+        console.log('dml_1',dml_1);
+
+        var dml_1_btns = $DOM('button').getItems();
+        console.log('dml_1_btns',dml_1_btns);
+
+        var dml_1_first = dml_1.getFirst();
+        console.log('dml_1_first',dml_1_first);
+
+        var dml_1_btns_first_last = dml_1.getFirstLast();
+        console.log('first, last: ',dml_1_btns_first_last)
+
+        dml_1.addSingleClass('btn-purple');
+
+        var dml_2 = $DOM('ul');
+        console.log('dml_2', dml_2)
+        dml_2.removeSingleClass('gray');
+        dml_2.addSingleClass('red'); 
+
+
+        $DOM('button:nth-child(2)').removeSingleClass('btn-blue').addSingleClass('red');
+
+        
+
+	</script>
+</body>
+</html>

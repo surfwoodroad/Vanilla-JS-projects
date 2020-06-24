@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Weather App</title>
+
+	<style type="text/css">
+		body {
+			margin: 0 auto;
+			background-color: rgba(144, 203, 238, 0.5);
+			border: 6px dashed lightsteelblue;
+			font-family: "Open Sans", sans-serif;
+			min-height: calc(100vh - 12px);
+		}
+
+		.wrap {
+			max-width: 40em;
+			width: 88%;
+			margin: 1.5em auto;
+			padding: 0 1.5em .5em;
+			border: #333 solid 1px;
+			border-radius: 6px;
+			background-color: rgba(255, 255, 255, 0.726);
+		}
+
+        .weather h3 {
+            font-size: 1.75rem;
+            margin: 1rem 0 0;
+            font-weight: normal;
+        }
+        .weather h3 strong {
+            font-size: 2rem;
+        }
+        .weather_description {
+            display: block;
+            font-size: 1rem;
+        }
+        .weather_icon {
+            display: inline-block;
+            width: 3rem;
+        }
+        .desc {
+            margin-top: .25rem;
+        }
+        .sunrise_sunset {
+            display: inline-block;
+            min-width: 4.5em
+        }
+           
+	</style>
+</head>
+<body>
+
+    <div class="wrap">
+        <h1>Current Local Weather</h1>
+
+        <div id="app" data-getLocalWeather>
+            <p>Checking the weather near you...</p>
+            <p>If this is taking too long, you can still <a href="https://www.google.com/search?q=weather" target="_blank">check the weather on Google</a>.</p>
+        </div>
+    </div>
+
+	
+<script src="https://polyfill.io/v3/polyfill.min.js?features=Array.prototype.includes%2CObject.assign"></script>
+<script>
+    
+    // getLocalWeather plugin!
+    var getLocalWeather = function(options) {
+        var defaults = {
+            appSelector: '#app',
+            tempUnit: 'C',
+            windSpeedUnit: 'k',
+            weatherIntroText: 'Current weather in: <strong>{{city}}, {{state}}, {{country}}</strong>',
+            showIcon: true
+        }
+
+    // override defaults with user settings
+    //var settings = Object.assign({}, defaults, options);
+    // we can mutate the original defaults array
+    var settings = Object.assign(defaults, options);
+
+// variables 
+    // country codes that use miles
+    /* UK, US, Liberia, Myanmar, American Samoa, Bahamas, Belize, British Virgin Islands, Cayman Islands, Dominica, Falkland Islands, Grenada, Guam, The N. Mariana Islands, Samoa, St. Lucia, St. Vincent & The Grenadines, St. Helena, St. Kitts & Nevis, the Turks & Caicos Islands, and the U.S. Virgin Islands */
+    var countriesUseMile = ['US', 'GB', 'LR', 'MM', 'AS', 'BS', 'BZ', 'VG', 'KY', 'DM', 'FK', 'GD', 'GU', 'MP', 'WS', 'LC', 'VC', 'SH', 'KN', 'TC', 'VI']
+
+    // country codes that use Fahrenheit
+    /* United States, Bahamas, Cayman Islands, Liberia, Palau, The Federated States of Micronesia, Marshall Islands */
+    var countriesUseFahrenheit = ['US', 'BS', 'KY', 'LR', 'PW', 'FM', 'MH']
+    
+    // get app element
+    var elem = document.querySelector(settings.appSelector);
+    // log to console if element not found
+    if (!elem) {console.log('Cannot find getLocalWeather app container!')}
+
+    // get time offset from UTC/GMT
+    var x = new Date();
+    var currentTimeZoneOffsetInHours = x.getTimezoneOffset() / 60;
+
+    // to create a query string with no spaces
+    function removeSpaces(str) {
+        return str.replace(new RegExp(/[\s]/, 'g'), '+');
+    }
+
+    /**
+    * Celsius to Fahrenheit and keep decimal value for C
+    *    @param 'temp' {number} is the from the api in Celsius
+    *    @param 'country' {string} is the from the api
+    *    @return temp in F or C {number}
+    */
+    function c2f(temp, country) {
+        // check settings for Fahrenheit
+        if ( settings.tempUnit.toUpperCase() === 'F' ) {
+            return Math.round((temp * 9 / 5) + 32);
+
+        // check setttings for auto - if so, compare to countries array
+        } else if (settings.tempUnit.toLowerCase() === 'auto') {
+            return countriesUseFahrenheit.includes(country) ? Math.round((temp * 9 / 5) + 32) :  temp;
+        // neither, so use the original Celsuis
+        } else {
+            return temp;
+        }
+    }
+
+    /**
+    * kilometers per hour to mph
+    *    @param 'speed' {number} (in kph) is the from the api
+    *    @param 'unit' {string} is from settings.windSpeedUnit
+    *    @param 'country' {string} is the from the api
+    *    @return speed in the appropriate units, with mph or kph add to string
+    */
+    function k2mph(speed, unit, country) {
+        // return unit.toLowerCase() === 'm' ?  Math.round(speed * 0.621371) + 'mph' :  Math.round(speed) + 'kph';
+        // check settings for 'm' as in miles
+        if ( unit.toLowerCase() === 'm' ) {
+            return Math.round(speed * 0.621371) + 'mph';
+
+        // check settings for auto - if so, compare to countries array
+        } else if ( unit.toLowerCase() === 'auto' ) {
+            return countriesUseMile.includes(country) ? Math.round(speed * 0.621371) + 'mph':  Math.round(speed) + 'kph';
+
+        // neither, so use the original kilometers per hour
+        } else {
+            return Math.round(speed) + 'kph';
+        }
+    }
+
+    /** 
+    * update UTC hours to local
+    * not sure if this covers everything!!!!!!!
+    *    @param 'time' time of sunrise or sunset
+    *    @param 'offset' local offset from UTC/GMT
+    *    @return local time for passed in UTC time (sunrise or sunset)
+    */
+    function updateHours(time, offset) {
+        hours = parseInt(time.substring(0,2));
+        remainder = time.substring(2,time.length);
+        hours = hours - offset;
+        // deal with previous day
+        if (Math.sign(hours) === -1) {
+            hours = 24 + hours;
+        } else if (hours >= 24) {
+            hours = hours - 24;
+        }
+        hours = hours.toString();
+        // add leading zero
+        if (hours.length === 1) {
+            hours = '0' + hours;
+        }
+
+        return hours + remainder;
+    }
+    
+    /**
+    * Sanitize and encode all HTML in a user-submitted string
+    * (c) 2018 Chris Ferdinandi, MIT License, https://gomakethings.com
+    * @param   {String} str  The user-submitted string
+    * @returns {String}      The sanitized string
+    */
+    function sanitizeHTML (str) {
+        var temp = document.createElement("div");
+        temp.textContent = str;
+        return temp.innerHTML;
+    }
+
+    /**
+    * get weather icon if it should be displayed
+    * 
+    * @param   'getIcon' {bool} settings.showIcon
+    * @param   'icon' weather icon from api
+    * @returns  {string} img tag with icon, or empty string
+    */
+    function getIcon(getIcon, icon) {
+        if (getIcon) {
+            var iconStr = 'https://weatherbit.io/static/img/icons/' + sanitizeHTML(icon) + '.png';
+            return `<img src=${iconStr} alt="" class="weather_icon" />`
+        } else {
+            return '';
+        }
+    }
+
+    // replace {{placeholders}}
+    function replacePlaceholders(text, city, state, country) {
+        return text
+            .replace('{{city}}', sanitizeHTML(city))
+            .replace('{{state}}', sanitizeHTML(state))
+            .replace('{{country}}', sanitizeHTML(country))
+    }
+
+
+    /**
+    * takes weather object from api, builds html content
+    * 
+    * @param   'weatherData' obj from api
+    */
+    function displayWeather(weatherData) {
+        var city = weatherData.city_name;
+        var state = weatherData.state_code;
+        var country = weatherData.country_code;
+        var timezone = weatherData.timezone;
+        var temp = weatherData.app_temp;
+        var currentTime = weatherData.ob_time;
+        var sunrise = weatherData.sunrise;
+        var sunset = weatherData.sunset;
+        var precip = weatherData.precip;
+        var description = weatherData.weather.description;
+        var icon = weatherData.weather.icon;
+        var windDir = weatherData.wind_cdir_full;
+        var windSp = weatherData.wind_spd * 3.6; // meters per second to k/s
+
+        // check settings.tempUnit for unit option
+        // any value other than 'F' or 'auto' will show Celsius
+        temp = c2f(temp, country);
+        
+        // check settings.windSpeedUnit for unit option
+        // any value other than 'm' or 'auto' will use kph
+        windSp = k2mph(windSp, settings.windSpeedUnit, country);
+
+        // update sunrise and sunset to local hours
+        sunrise = updateHours(sunrise, currentTimeZoneOffsetInHours);
+        sunset = updateHours(sunset, currentTimeZoneOffsetInHours);
+        
+        // build content
+        var currentTempPlace = `
+            <div class="weather"><p>${replacePlaceholders(settings.weatherIntroText, city, state, country)}</p>
+            <h3><strong>${sanitizeHTML(temp)}&deg;</strong>${getIcon(settings.showIcon, icon)}<span class="weather_description">${description}</span></h3>
+            <p class="desc"><br>
+            The wind is blowing from the ${sanitizeHTML(windDir)} at ${sanitizeHTML(windSp)}.<br>
+            Current precipitation: ${sanitizeHTML(precip)} (mm/hr).<br>
+            <span class="sunrise_sunset">Sunrise: </span>${sanitizeHTML(sunrise)}<br>
+            <span class="sunrise_sunset">Sunset: </span>${sanitizeHTML(sunset)}
+            </p></div>
+        `// end of building content
+        // put content into doc
+        elem.innerHTML = currentTempPlace;
+    }
+
+    // Call the API
+    // get location from ip address
+    fetch('https://ipapi.co/json').then(function (response) {
+        // The API call was successful!
+        if (response.ok) {
+            return response.json();
+        } else {
+            return Promise.reject(response);
+        }
+    }).then(function (data) {
+        console.log(data)
+        // get weather using location in query string that CloudFlare Worker will use
+        return fetch('https://little-sun-3778.surfwoodroad.workers.dev?city='+data.city+'&state='+data.region_code+'&country='+data.country+'&timezone'+data.timezone);
+    }).then(function (response) {
+        // The API call was successful!
+        if (response.ok) {
+            return response.json();
+        } else {
+            return Promise.reject(response);
+        }
+    }).then(function (weatherData) {
+        console.log(weatherData.data[0])
+        displayWeather(weatherData.data[0]);
+    }).catch(function (err) {
+        //fetchFail(err)
+        console.log(err)
+    });
+
+    }
+/*
+*********
+getLocalWeather Options
+
+    appSelector: choose container to write html into with a css string;
+    tempUnit: select C or F for Celsius or Fahrenheit
+    windSpeedUnit: set to 'm' for mph, default is kph
+    weatherIntroText: display text before place and temperature
+    showIcon: true or false to show current weather icon (a png that would represent conditions like sunny, cloudy, rainy)
+
+Here are the defaults: 
+    appSelector: '#app',
+    tempUnit: 'C', can also be 'auto'
+    windSpeedUnit: 'k', 'm' can also be 'auto'
+    weatherIntroText: 'Current weather in',
+    showIcon: true
+*********
+*/
+    getLocalWeather({
+        appSelector: '[data-getLocalWeather]',
+        weatherIntroText: 'Current weather conditions in: <strong>{{city}}, {{state}}, {{country}}</strong>',
+        tempUnit: 'auto',
+        windSpeedUnit: 'auto',
+        showIcon: true
+    })
+
+    
+</script>
+</body>
+</html>

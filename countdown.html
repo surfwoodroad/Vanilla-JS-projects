@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Countdown</title>
+
+<style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+.wrap {
+    width: 65em;
+    max-width: 100%;
+    margin: 0 auto
+}
+
+.event_time_wrap {
+    display: flex;
+}
+.event_time_wrap > div {
+    margin-right: 2em;
+}
+.note {
+    font-size: .875rem;
+    margin-top: .25em;
+}
+input.error {
+    border-color: red;
+}
+span.error {
+    color: red;
+    display: block;
+}
+
+#countdown_wrap h2 {
+    display: flex;
+    align-items: center;
+}
+.countdown_item {
+    align-self: center;
+    padding: 0 1rem;
+}
+.countdown_text {
+    display: block;
+    text-align: center;
+}
+.countdown_value {
+    display: block;
+    text-align: center;
+}
+
+</style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>Let's make a countdown timer!</h1>
+        <form class="countdown_builder">
+            <p>
+                <label for="eventName">Event Name: </label>
+                <input type="text" name="eventName" id="eventName" value="Your Fantastic Event" />
+            </p>
+            <p>
+                <label for="eventText">Event Text: </label>
+                <input type="text" name="eventText" id="eventText" value="begins in" />
+            </p>
+            <p>
+                <label for="eventDate">Event Date: </label>
+                <input type="date" name="eventDate" id="eventDate" min="2020-06-08" max="2022-06-08" required="required">
+                <span></span>
+            </p>
+            <div class="event_time">
+                <h3>Optional Event Time: </h3>
+                <div class="event_time_wrap">
+                    <div>
+                        <label for="am">AM</label>
+                        <input type="radio" name="ampm" id="am" value="am" checked>
+                        <label for="pm">PM</label>
+                        <input type="radio" name="ampm" id="pm" value="pm" >
+                    </div>
+                    <div>
+                        <label for="eventHour">Hour: </label>
+                        <input type="number" name="eventHour" id="eventHour" min="1" max="12" value="12" required="required">
+                    </div>
+                    <div>
+                        <label for="eventMinute">Minutes: </label>
+                        <input type="number" name="eventMinute" id="eventMinute" min="0" max="59" value="0" required="required">
+                        <p class="note">Seconds will be 0 unless 59 is chosen for Minutes, then seconds will be 59, also.</p>
+                    </div>
+                </div>
+            </div>
+            <p>
+                <label for="eventExpired">Expired Event Text: </label>
+                <input type="text" name="eventExpired" id="eventExpired" value="The Wait Is Over!" />
+            </p>
+            <p>
+                <button type="submit" id="btn_countdown">Fire It Up!</button>
+            </p>
+            
+        </form>
+
+        <div id="countdown_wrap"></div>
+    </div>
+
+
+<script>
+ /*!
+ * Sanitize and encode all HTML in a user-submitted string
+ * (c) 2018 Chris Ferdinandi, MIT License, https://gomakethings.com
+ * @param  {String} str  The user-submitted string
+ * @return {String} str  The sanitized string
+ */
+ var sanitizeHTML = function (str) {
+	var temp = document.createElement('div');
+	temp.textContent = str;
+	return temp.innerHTML;
+};
+    var eventName = document.querySelector('#eventName');
+    var eventText = document.querySelector('#eventText');
+    var eventExpired = document.querySelector('#eventExpired');
+    var eventDate = document.querySelector('#eventDate');
+    // var ampm = document.querySelector('[name="ampm"]');
+    var eventHour = document.querySelector('#eventHour');
+    var eventMinute = document.querySelector('#eventMinute');
+    var btn = document.querySelector('#btn_countdown');
+    var defaultTitle = 'Your Fantastic Event';
+    var countdownContainer = document.querySelector('#countdown_wrap');
+
+    
+
+    function leadingZero(val) {
+        var val = val.toString();
+        if ( val.length === 1 ) {
+            return '0' + val;
+        }
+        return val;
+    }
+
+
+    function buildCountdown(targetDate) {
+        console.log(targetDate)
+        // Get (sanitized) content from form
+        var title = sanitizeHTML(eventName.value);
+        if (title === '') {
+            title = defaultTitle;
+        }
+        eventText = sanitizeHTML(eventText.value);
+        eventExpired = sanitizeHTML(eventExpired.value);
+
+        // COUNTDOWN!!!
+        setInterval(function() {
+            var now = new Date().getTime();
+            var timeRemaining = targetDate - now;
+            var days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24)); 
+            var hours = Math.floor((timeRemaining%(1000 * 60 * 60 * 24))/(1000 * 60 * 60)); 
+            var minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60)); 
+            var seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+            minutes = leadingZero(minutes);
+            seconds = leadingZero(seconds);
+
+            if (timeRemaining > 0) {
+
+                countdownContainer.innerHTML = `
+                    <h2>${title} ${eventText} 
+                        <div class="countdown_item"><span class="countdown_text">Days</span><span class="countdown_value">${days}</span></div>
+
+                        <div class="countdown_item"><span class="countdown_text">Hours</span><span class="countdown_value">${hours}</span></div>
+
+                        <div class="countdown_item"><span class="countdown_text">Min</span><span class="countdown_value">${minutes}</span></div>
+
+                        <div class="countdown_item"><span class="countdown_text">Sec</span><span class="countdown_value">${seconds}</span></div>
+                    </h2> 
+                `
+            } else {
+                countdownContainer.innerHTML = `<p>${eventExpired}</p>`;
+            }
+
+            }, 1000);
+
+    
+    }
+
+    function getCountdown(eventDateVal) {
+        //var eventDateVal = eventDate.value;
+        eventDateVal = eventDateVal.split('-');
+        //console.log(eventDateVal)
+        var eventHourVal = parseInt(eventHour.value);
+        var eventMinuteVal = parseInt(eventMinute.value);
+        var ampmVal = document.querySelector('[name="ampm"]:checked').value;
+
+        if (ampmVal !== null && ampmVal === 'pm' && eventHourVal !== 12) {
+            eventHourVal = eventHourVal + 12;
+        }
+        /* if (ampmVal !== null && ampmVal === 'pm' && eventHourVal === 12) {
+            eventHourVal = 12;
+        } */
+        if (ampmVal !== null && ampmVal === 'am' && eventHourVal === 12) {
+            eventHourVal = 0;
+        }
+
+        var targetDate = new Date(eventDateVal[0], eventDateVal[1]-1, eventDateVal[2], eventHourVal, eventMinuteVal).getTime();
+        // console.log(new Date(eventDateVal[0], eventDateVal[1]-1, eventDateVal[2], eventHourVal, eventMinuteVal))
+        buildCountdown(targetDate);
+
+    }
+
+    function validateForm(e) {
+        e.preventDefault();
+        var eventDateVal = eventDate.value;
+        var errorMsg = eventDate.parentElement.querySelector('span');
+
+        if (eventDateVal === '') {
+            eventDate.classList.add('error');
+            errorMsg.classList.add('error');
+            errorMsg.textContent = 'This field is required';
+            return false;
+        } 
+        eventDate.classList.remove('error');
+        errorMsg.classList.remove('error');
+        errorMsg.textContent = '';
+        getCountdown(eventDateVal);
+    }
+    
+    btn.addEventListener('click', validateForm)
+
+
+</script>
+</body>
+</html>
