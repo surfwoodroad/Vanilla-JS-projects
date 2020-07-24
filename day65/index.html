@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Explore</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 60em;
+			width: 88%;
+            background-color: rgba(106, 200, 243, 0.75);
+            font-family: "Open Sans", sans-serif;
+            font-size: 16px;
+		}
+
+        .wrap {
+            padding: 0 1.5em;
+            border: #333 solid 1px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+        .place_wrap {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .place_article {
+            width: 46%;
+            margin: 0 0 3rem;
+        }
+        .place__hdr {
+            font-size: 1.5rem;
+            margin-top: 1.75em;
+            margin-bottom: 0;
+        }
+        .place__address {
+            margin-top: 0;
+            font-size: .875rem;
+        }
+        img {
+            max-width: 100%;
+        }
+        .place__img {
+            display: block;
+            box-shadow: 3px 3px 20px 0px rgba(0, 0, 0, .2)
+        }
+
+
+	</style>
+</head>
+<body>
+
+	<h1>Explore</h1>
+	<p>Explore cool, quirky places in Rhode Island's own backyard.</p>
+
+	<div id="app" aria-live="polite">Loading...</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/reefjs@7/dist/reef.js"></script>
+<script>
+
+var appContainer = document.querySelector('#app');
+var endpoint = 'https://vanillajsacademy.com/api/places.json';
+
+var buildPlacesContent = function(propsPlaces) {
+    return '<div class="place_wrap">' + propsPlaces.map(function(place) {
+            var placeImg
+            if (place.img) {
+                placeImg = `<p class="place__img"><a href="${place.url}" target="_blank"><img src="${place.img}" alt="${place.location}" class="place__img" /></a></p>`
+            } else {
+                placeImg = ''
+            }
+            return `<article class="place_article"><h2 class="place__hdr"><a href="${place.url}" target="_blank">${place.place}</a></h2>
+                <address class="place__address">${place.location}</address>
+                ${placeImg}
+                <p>${place.description}</p>
+                </article>
+            `
+        }).join('') + '</div>';
+}
+        
+var app = new Reef(appContainer, {
+	data: {},
+	template: function (props) {
+        //console.log(props)
+        if (props.places && props.places.length) {
+            return buildPlacesContent(props.places)
+        }
+        return buildNoPlacesContent();
+		
+	}
+});
+
+function buildNoPlacesContent(err) {
+    // There was an error
+    console.warn('#FAIL!!!!', err);
+    // hold back the tears and don't break something
+    return '<p>Sorry, there was an error getting information of the prized places in Rhode Island</p>';
+}
+
+// Fetch data from the API
+var getPlaces = function() {
+    fetch(endpoint).then(function (response) {
+        return response.json();
+    }).then(function (data) {
+        // console.log(data)
+        // Reactively update the data
+        // This causes the render to happen
+        // app.data = data; - make it a property
+        app.data.places = data;
+    }).catch(function (err) {
+        app.data.places = null;
+    });
+}
+getPlaces();
+</script>
+</body>
+</html>

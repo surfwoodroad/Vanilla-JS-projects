@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Explore</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 60em;
+			width: 88%;
+            background-color: rgba(106, 200, 243, 0.75);
+            font-family: "Open Sans", sans-serif;
+            font-size: 16px;
+		}
+
+        .wrap {
+            padding: 0 1.5em;
+            border: #333 solid 1px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+        .place_wrap {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .place_article {
+            width: 46%;
+            margin: 0 0 3rem;
+            position: relative;
+        }
+        .place__hdr {
+            font-size: 1.5rem;
+            margin-top: 1.75em;
+            margin-bottom: 0;
+        }
+        .place__address {
+            margin-top: 0;
+            font-size: .875rem;
+        }
+        img {
+            max-width: 100%;
+        }
+        .place__img {
+            display: block;
+            box-shadow: 3px 3px 20px 0px rgba(0, 0, 0, .2)
+        }
+        .like {
+            border: none;
+            background-color: transparent;
+            padding: .25rem .25rem 0;
+            cursor: pointer;
+        }
+        .icon-heart {
+            width: 2em;
+            height: 2em;
+        }
+        .path1 {
+            fill: #999;
+        }
+        .path2 {
+            fill: #333;
+        }
+        button[aria-pressed="true"] .path1  {
+            fill: rgba(255, 0, 0, .8);
+        }
+        button[aria-pressed="true"] .path2  {
+            fill: red;
+        }
+        .user-marks {
+            display: flex;
+            justify-content: space-between;
+            margin-top: .5em;
+        }
+        .btn-visited {
+            font: inherit;
+            font-size: .875rem;
+            padding: .1rem .5rem;
+            background-color: #ededed;
+            color: #555;
+            border: #ccc solid 1px;
+            border-radius: 4px;
+        }
+        .btn-visited[aria-pressed="true"] {
+            background-color: #0d5a24;
+            color: #fff;
+            border-color: #333;
+        }
+        .filters {
+            text-align: center;
+        }
+        .filters label {
+            margin: 0 .5rem;
+        }
+
+        .hide-me {
+            display: none;
+        }
+        .hide-me {
+            display: none;
+        }
+        article[data-article-show="false"] {
+            display: none;
+        }
+        
+
+	</style>
+</head>
+<body>
+
+	<h1>Explore</h1>
+    <p>Explore cool, quirky places in Rhode Island's own backyard.</p>
+    <div class="filters">
+        <strong>Filter:</strong>
+        <label>
+            <input type="radio" name="view" value="all" checked>
+            All Places
+        </label>
+    
+        <label>
+            <input type="radio" name="view" value="fave">
+            Favorites
+        </label>
+    
+        <label>
+            <input type="radio" name="view" value="visited">
+            Visited
+        </label>
+    
+        <label>
+            <input type="radio" name="view" value="not-visited">
+            Not Visited
+        </label>
+    </div>
+
+	<div id="app" aria-live="polite">Loading...</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/reefjs@7/dist/reef.js"></script>
+<script>
+
+var appContainer = document.querySelector('#app');
+var endpoint = 'https://vanillajsacademy.com/api/places.json';
+var favesID = 'exploreFaves';
+var visitedID = 'placesVisited';
+
+var getFaves = function() {
+    var faves = localStorage.getItem(favesID);
+	var favesObj = faves ? JSON.parse(faves) : {};
+	return favesObj;
+}
+var getVisited = function() {
+    var visited = localStorage.getItem(visitedID);
+	var visitedObj = visited ? JSON.parse(visited) : {};
+	return visitedObj;
+}
+
+/**
+ * Save favorite places to localStorage
+ * @param  {Object} faves Favorite places
+ */
+ var saveFaves = function (faves) {
+	localStorage.setItem(favesID, JSON.stringify(faves));
+};
+ var saveVisited = function (visited) {
+	localStorage.setItem(visitedID, JSON.stringify(visited));
+};
+
+var buildPlacesContent = function(props) {
+    return '<div class="place_wrap">' + props.places.map(function(place) {
+            var placeImg
+            if (place.img) {
+                placeImg = `<p class="place__img"><a href="${place.url}" target="_blank"><img src="${place.img}" alt="${place.location}" class="place__img" /></a></p>`
+            } else {
+                placeImg = ''
+            }
+            return `<article class="place_article" data-article="${place.id}" data-article-show="${props.show[place.id]}"><h2 class="place__hdr"><a href="${place.url}" target="_blank">${place.place}</a></h2>
+                <address class="place__address">${place.location}</address>
+                <div class="user-marks">
+                    <button data-visited="${place.id}" class="btn-visited" aria-label="I have vistited ${place.place}" aria-pressed="${ props.visited[place.id] ? 'true' : '' }">I've been there!</button>
+                    <button data-fave="${place.id}" class="like" aria-label="Save ${place.place}" aria-pressed="${ props.faves[place.id] ? 'true' : '' }">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                        viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="icon-heart">
+                        <path class="path1" d="M474.655,74.503C449.169,45.72,413.943,29.87,375.467,29.87c-30.225,0-58.5,12.299-81.767,35.566
+                            c-15.522,15.523-28.33,35.26-37.699,57.931c-9.371-22.671-22.177-42.407-37.699-57.931c-23.267-23.267-51.542-35.566-81.767-35.566
+                            c-38.477,0-73.702,15.851-99.188,44.634C13.612,101.305,0,137.911,0,174.936c0,44.458,13.452,88.335,39.981,130.418
+                            c21.009,33.324,50.227,65.585,86.845,95.889c62.046,51.348,123.114,78.995,125.683,80.146c2.203,0.988,4.779,0.988,6.981,0
+                            c2.57-1.151,63.637-28.798,125.683-80.146c36.618-30.304,65.836-62.565,86.845-95.889C498.548,263.271,512,219.394,512,174.936
+                            C512,137.911,498.388,101.305,474.655,74.503z"/>
+                        <path class="path2" d="M160.959,401.243c-36.618-30.304-65.836-62.565-86.845-95.889
+                            c-26.529-42.083-39.981-85.961-39.981-130.418c0-37.025,13.612-73.631,37.345-100.433c21.44-24.213,49.775-39.271,81.138-43.443
+                            c-5.286-0.786-10.653-1.189-16.082-1.189c-38.477,0-73.702,15.851-99.188,44.634C13.612,101.305,0,137.911,0,174.936
+                            c0,44.458,13.452,88.335,39.981,130.418c21.009,33.324,50.227,65.585,86.845,95.889c62.046,51.348,123.114,78.995,125.683,80.146
+                            c2.203,0.988,4.779,0.988,6.981,0c0.689-0.308,5.586-2.524,13.577-6.588C251.254,463.709,206.371,438.825,160.959,401.243z"/>
+                        </svg>
+                    </button>
+                </div>
+                ${placeImg}
+                <p>${place.description}</p>
+                </article>
+            `
+        }).join('') + '</div>';
+}
+
+        
+var app = new Reef(appContainer, {
+    data: {},
+	template: function (props) {
+        //console.log(props)
+        if (props.places && props.places.length) {
+            return buildPlacesContent(props)
+        }
+        return buildNoPlacesContent();
+		
+	}
+});
+
+function buildNoPlacesContent(err) {
+    // There was an error
+    console.warn('#FAIL!!!!', err);
+    // hold back the tears and don't break something
+    return '<p>Sorry, there was an error getting information of the prized places in Rhode Island</p>';
+}
+
+// make an array with the place ID and set it to true
+// so we can turn them on and off later
+var setupDisplay = function(data) {
+    var showObj = {};
+    data.forEach(function(article) {
+        showObj[article.id] = true;
+    });
+    return showObj;
+}
+
+// Fetch data from the API
+var getPlaces = function() {
+    fetch(endpoint).then(function (response) {
+        return response.json();
+    }).then(function (data) {
+        // console.log(data)
+        // Reactively update the data
+        // This causes the render to happen
+        // app.data = data; - make it a property
+        app.data.faves = getFaves();
+        app.data.visited = getVisited();
+        app.data.show = setupDisplay(data);
+        app.data.places = data;
+    }).catch(function (err) {
+        app.data.places = null;
+    });
+}
+
+
+/**
+ * Handle render events
+ * @param  {Event} event The event object
+ */
+var renderHandler = function (event) {
+
+    // Save favorites to localStorage on render
+    saveFaves(app.data.faves);
+    saveVisited(app.data.visited);
+
+};
+
+function hideArticles(filter, article, articleID) {
+    var btn = article.querySelector('button[data-' + filter + ']');
+    var btnValue = btn.getAttribute('aria-pressed');
+    if (!btnValue) {
+        app.data.show[articleID] = 'false';
+    }
+}
+
+function showFilteredPlaces(filter, selector) {
+    var articles = Array.prototype.slice.call(document.querySelectorAll(selector));
+    
+        articles.map(function(article) {
+            var articleID = article.dataset.article;
+
+            // article.dataset.articleShow = 'true';
+            app.data.show[articleID] = 'true';
+            //console.log('...', app.data.show[articleID])
+            if (filter === 'all') {
+                return
+            }
+            ;
+            if (filter === 'fave' || filter === 'visited') {
+                hideArticles(filter, article, articleID)
+            }
+            if (filter === 'not-visited') {
+                var btn = article.querySelector('button[data-visited]');
+                var btnValue = btn.getAttribute('aria-pressed');
+                if (btnValue) {
+                    app.data.show[articleID] = 'false';
+                }
+            }
+            /* if (filter === 'fave') {
+                var btn = article.querySelector('button[data-fave]');
+                var btnValue = btn.getAttribute('aria-pressed');
+                if (!btnValue) {
+                    app.data.show[articleID] = 'false';
+                }
+            }
+            if (filter === 'visited') {
+                var btn = article.querySelector('button[data-visited]');
+                var btnValue = btn.getAttribute('aria-pressed');
+                if (!btnValue) {
+                    app.data.show[articleID] = 'false';
+                }
+            }
+            if (filter === 'not-visited') {
+                var btn = article.querySelector('button[data-visited]');
+                var btnValue = btn.getAttribute('aria-pressed');
+                if (btnValue) {
+                    app.data.show[articleID] = 'false';
+                }
+            } */
+
+        });
+    
+}
+
+// handles filter input change
+var inputHandler = function(event) {
+
+    if (!event.target.closest('.filters')) return;
+
+    // values: all, faves, visited, not-visited
+    showFilteredPlaces(event.target.value, '.place_article');
+}
+
+var clickHandler = function(event) {
+    // Only run on fave buttons  
+    
+    // this is a hack so I don't have to do a total rewrite
+    var filter = document.querySelector('input[name="view"]:checked').value;
+    
+
+    if (event.target.closest('.like')) {
+        var place = event.target.closest('.like').getAttribute('data-fave');
+        // If place is already saved, remove it
+	    // Otherwise, save it
+        app.data.faves[place] = app.data.faves[place] ? false : true;
+        if (filter === 'fave') {
+            app.data.show[place] = app.data.faves[place];
+        }
+    } else if (event.target.closest('.btn-visited')) {
+        var visit = event.target.closest('.btn-visited').getAttribute('data-visited');
+        console.log('visit: ',visit)
+        var visitID = event.target.closest('.btn-visited').getAttribute('data-visited');
+        app.data.visited[visit] = app.data.visited[visit] ? false : true;
+        console.log('filter: ', filter)
+        if ( filter === 'visited' ) {
+            app.data.show[visit] = app.data.visited[visit];
+        }
+        if ( filter === 'not-visited' ) {
+            app.data.show[visit] = app.data.visited[visit] ? false : true;
+        }
+    } else {
+        return
+    }
+	
+}
+
+
+getPlaces();
+document.addEventListener('click', clickHandler);
+document.addEventListener('render', renderHandler);
+document.addEventListener('input', inputHandler);
+
+</script>
+</body>
+</html>

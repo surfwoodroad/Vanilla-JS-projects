@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Explore</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 60em;
+			width: 88%;
+            background-color: rgba(106, 200, 243, 0.75);
+            font-family: "Open Sans", sans-serif;
+            font-size: 16px;
+		}
+
+        .wrap {
+            padding: 0 1.5em;
+            border: #333 solid 1px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+        .place_wrap {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .place_article {
+            width: 46%;
+            margin: 0 0 3rem;
+            position: relative;
+        }
+        .place__hdr {
+            font-size: 1.5rem;
+            margin-top: 1.75em;
+            margin-bottom: 0;
+        }
+        .place__address {
+            margin-top: 0;
+            font-size: .875rem;
+        }
+        img {
+            max-width: 100%;
+        }
+        .place__img {
+            display: block;
+            box-shadow: 3px 3px 20px 0px rgba(0, 0, 0, .2)
+        }
+        .like {
+            border: none;
+            background-color: transparent;
+            padding: .25rem .25rem 0;
+            position: absolute;
+            top: 4.5em;
+            right: .5em;
+            cursor: pointer;
+        }
+        .icon-heart {
+            width: 2em;
+            height: 2em;
+        }
+        .path1 {
+            fill: #999;
+        }
+        .path2 {
+            fill: #333;
+        }
+        button[aria-pressed="true"] .path1  {
+            fill: rgba(255, 0, 0, .8);
+        }
+        button[aria-pressed="true"] .path2  {
+            fill: red;
+        }
+        
+
+	</style>
+</head>
+<body>
+
+	<h1>Explore</h1>
+	<p>Explore cool, quirky places in Rhode Island's own backyard.</p>
+
+	<div id="app" aria-live="polite">Loading...</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/reefjs@7/dist/reef.js"></script>
+<script>
+
+var appContainer = document.querySelector('#app');
+var endpoint = 'https://vanillajsacademy.com/api/places.json';
+var favesID = 'exploreFaves';
+
+var getFaves = function() {
+    var faves = localStorage.getItem(favesID);
+	var favesObj = faves ? JSON.parse(faves) : {};
+	return favesObj;
+}
+
+/**
+ * Save favorite places to localStorage
+ * @param  {Object} faves Favorite places
+ */
+ var saveFaves = function (faves) {
+	localStorage.setItem(favesID, JSON.stringify(faves));
+};
+
+var buildPlacesContent = function(props) {
+    return '<div class="place_wrap">' + props.places.map(function(place) {
+            var placeImg
+            if (place.img) {
+                placeImg = `<p class="place__img"><a href="${place.url}" target="_blank"><img src="${place.img}" alt="${place.location}" class="place__img" /></a></p>`
+            } else {
+                placeImg = ''
+            }
+            return `<article class="place_article"><h2 class="place__hdr"><a href="${place.url}" target="_blank">${place.place}</a></h2>
+                <button data-fave="${place.id}" class="like" aria-label="Save ${place.place}" aria-pressed="${ props.faves[place.id] ? 'true' : 'false' }">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                        viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="icon-heart">
+                        <path class="path1" d="M474.655,74.503C449.169,45.72,413.943,29.87,375.467,29.87c-30.225,0-58.5,12.299-81.767,35.566
+                            c-15.522,15.523-28.33,35.26-37.699,57.931c-9.371-22.671-22.177-42.407-37.699-57.931c-23.267-23.267-51.542-35.566-81.767-35.566
+                            c-38.477,0-73.702,15.851-99.188,44.634C13.612,101.305,0,137.911,0,174.936c0,44.458,13.452,88.335,39.981,130.418
+                            c21.009,33.324,50.227,65.585,86.845,95.889c62.046,51.348,123.114,78.995,125.683,80.146c2.203,0.988,4.779,0.988,6.981,0
+                            c2.57-1.151,63.637-28.798,125.683-80.146c36.618-30.304,65.836-62.565,86.845-95.889C498.548,263.271,512,219.394,512,174.936
+                            C512,137.911,498.388,101.305,474.655,74.503z"/>
+                        <path class="path2" d="M160.959,401.243c-36.618-30.304-65.836-62.565-86.845-95.889
+                            c-26.529-42.083-39.981-85.961-39.981-130.418c0-37.025,13.612-73.631,37.345-100.433c21.44-24.213,49.775-39.271,81.138-43.443
+                            c-5.286-0.786-10.653-1.189-16.082-1.189c-38.477,0-73.702,15.851-99.188,44.634C13.612,101.305,0,137.911,0,174.936
+                            c0,44.458,13.452,88.335,39.981,130.418c21.009,33.324,50.227,65.585,86.845,95.889c62.046,51.348,123.114,78.995,125.683,80.146
+                            c2.203,0.988,4.779,0.988,6.981,0c0.689-0.308,5.586-2.524,13.577-6.588C251.254,463.709,206.371,438.825,160.959,401.243z"/>
+                        </svg>
+                    </button>
+                <address class="place__address">${place.location}</address>
+                ${placeImg}
+                <p>${place.description}</p>
+                </article>
+            `
+        }).join('') + '</div>';
+}
+
+        
+var app = new Reef(appContainer, {
+    data: {},
+	template: function (props) {
+        //console.log(props)
+        if (props.places && props.places.length) {
+            return buildPlacesContent(props)
+        }
+        return buildNoPlacesContent();
+		
+	}
+});
+
+function buildNoPlacesContent(err) {
+    // There was an error
+    console.warn('#FAIL!!!!', err);
+    // hold back the tears and don't break something
+    return '<p>Sorry, there was an error getting information of the prized places in Rhode Island</p>';
+}
+
+
+// Fetch data from the API
+var getPlaces = function() {
+    fetch(endpoint).then(function (response) {
+        return response.json();
+    }).then(function (data) {
+        // console.log(data)
+        // Reactively update the data
+        // This causes the render to happen
+        // app.data = data; - make it a property
+        app.data.faves = getFaves();
+        app.data.places = data;
+    }).catch(function (err) {
+        app.data.places = null;
+    });
+}
+
+
+/**
+ * Handle render events
+ * @param  {Event} event The event object
+ */
+var renderHandler = function (event) {
+
+// Save favorites to localStorage on render
+saveFaves(app.data.faves);
+
+};
+
+var clickHandler = function(event) {
+    // Only run on fave buttons
+	var place = event.target.closest('.like').getAttribute('data-fave');
+    if (!place) return;
+
+	// If place is already saved, remove it
+	// Otherwise, save it
+	app.data.faves[place] = app.data.faves[place] ? false : true;
+}
+
+
+getPlaces();
+document.addEventListener('click', clickHandler);
+document.addEventListener('render', renderHandler);
+
+</script>
+</body>
+</html>

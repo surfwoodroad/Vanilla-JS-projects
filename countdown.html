@@ -38,18 +38,34 @@ span.error {
 #countdown_wrap h2 {
     display: flex;
     align-items: center;
+    color: #333;
+}
+.event_name {
+    font-size: 110%;
+    display: inline-block;
+    padding-right: .5rem;
+    color: #000;
 }
 .countdown_item {
     align-self: center;
-    padding: 0 1rem;
+    padding: 0;
+    margin: 0 .5rem;
+    border: rgb(16, 34, 73) solid 1px;
+    border-radius: 4px;
 }
 .countdown_text {
     display: block;
     text-align: center;
+    font-size: .9em;
+    background-color: lightskyblue;
+    padding: 2px .5em;
 }
 .countdown_value {
     display: block;
     text-align: center;
+    color: #fff;
+    background-color: rgb(16, 34, 73);
+    padding: 2px .5em;
 }
 
 </style>
@@ -60,7 +76,8 @@ span.error {
         <form class="countdown_builder">
             <p>
                 <label for="eventName">Event Name: </label>
-                <input type="text" name="eventName" id="eventName" value="Your Fantastic Event" />
+                <input type="text" name="eventName" id="eventName" required="required" />
+                <span></span>
             </p>
             <p>
                 <label for="eventText">Event Text: </label>
@@ -143,9 +160,9 @@ span.error {
         console.log(targetDate)
         // Get (sanitized) content from form
         var title = sanitizeHTML(eventName.value);
-        if (title === '') {
+        /* if (title === '') {
             title = defaultTitle;
-        }
+        } */
         eventText = sanitizeHTML(eventText.value);
         eventExpired = sanitizeHTML(eventExpired.value);
 
@@ -164,7 +181,7 @@ span.error {
             if (timeRemaining > 0) {
 
                 countdownContainer.innerHTML = `
-                    <h2>${title} ${eventText} 
+                    <h2><span class="event_name">${title}</span> ${eventText} 
                         <div class="countdown_item"><span class="countdown_text">Days</span><span class="countdown_value">${days}</span></div>
 
                         <div class="countdown_item"><span class="countdown_text">Hours</span><span class="countdown_value">${hours}</span></div>
@@ -209,18 +226,29 @@ span.error {
 
     function validateForm(e) {
         e.preventDefault();
+        var eventNameVal = eventName.value;
         var eventDateVal = eventDate.value;
-        var errorMsg = eventDate.parentElement.querySelector('span');
+        var errorMsg1 = eventName.parentElement.querySelector('span');
+        var errorMsg2 = eventDate.parentElement.querySelector('span');
 
+        if (eventNameVal === '') {
+            eventName.classList.add('error');
+            errorMsg1.classList.add('error');
+            errorMsg1.textContent = 'This field is required';
+            return false;
+        }
         if (eventDateVal === '') {
             eventDate.classList.add('error');
-            errorMsg.classList.add('error');
-            errorMsg.textContent = 'This field is required';
+            errorMsg2.classList.add('error');
+            errorMsg2.textContent = 'This field is required';
             return false;
         } 
+        eventName.classList.remove('error');
         eventDate.classList.remove('error');
-        errorMsg.classList.remove('error');
-        errorMsg.textContent = '';
+        errorMsg1.classList.remove('error');
+        errorMsg1.textContent = '';
+        errorMsg2.classList.remove('error');
+        errorMsg2.textContent = '';
         getCountdown(eventDateVal);
     }
     

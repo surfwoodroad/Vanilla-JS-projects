@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>A countdown</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 40em;
+			width: 88%;
+            background-color: rgba(106, 200, 243, 0.75);
+            font-family: "Open Sans", sans-serif;
+		}
+
+        .wrap {
+            padding: 0 1.5em;
+            border: #333 solid 1px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+
+        .time_remaining {
+            font-size: 2.5rem;
+        }
+
+        .btn {
+            background: #fff;
+            color: darkblue;
+            padding: .25rem 0;
+            margin: 0 .15rem;
+            font: inherit;
+            width: 5rem;
+            border-radius: 4px;
+            border: #333 solid 1px;
+        }
+        .btn:hover {
+            cursor: pointer;
+            background: darkblue;
+            color: #fff;
+        }
+
+        .time_readout {
+            padding: 4rem 2rem;
+        }
+        .fireworks {
+            background-image: url('https://surfwoodroad.com/images/fireworks.gif');
+            background-size: contain;
+            background-position: center center;
+            background-repeat: no-repeat;
+        }
+	</style>
+</head>
+<body>
+
+    <div class="wrap">
+        <h1>...wait for it...</h1>
+        
+        
+        <div id="app" aria-live="polite"></div>
+
+    </div>
+
+	
+
+<script>
+
+    // set this to your desired time, in seconds
+    var count = 10;
+    var timeTicking;
+    var btnStartStop = document.querySelector('[data-startStop]');
+
+    /**
+     * State-based UI Component
+     * @param {String} selector The selector for the target element
+     * @param {Object} options  Component options
+     */
+    var Timer = function (selector, options) {
+        this.elem = document.querySelector(selector);
+        this.data = options.data;
+        this.template = options.template;
+    };
+
+    /**
+     * Render a new UI
+     */
+    Timer.prototype.render = function () {
+        this.elem.innerHTML = this.template(this.data);
+    };
+
+    function formatTime( time ) {
+        
+        return {
+            minutes: parseInt((time / 60), 10),
+            seconds: (time % 60).toString()
+        }
+    }
+
+    function formatMessage( props ) {
+        var time = formatTime(props.seconds);
+        //console.log('props: ', props)
+        var html;
+        html = `<p class="time_readout">
+                <span class="time_remaining">${time.minutes}:${time.seconds.padStart(2, '0')}</span>
+            </p>
+            <p>
+                <button class="btn" data-timer data-startStop ${props.dataAttribute}>${props.btnText}</button>
+                <button class="btn" data-timer data-restart>Restart</button>
+            </p>`;
+            return html;
+    }
+
+    function removeBg(element, theClass) {
+        element.classList.remove(theClass);
+    }
+
+    function bgTimesUp(element) {
+        var bgTimer = setTimeout(function() {
+            removeBg(element, 'fireworks')
+        }, 8000);
+    }
+
+    function bgFireworks(showImage) {
+        var p_bg = document.querySelector('.time_readout');
+
+
+        if (p_bg) {
+            if (showImage) {
+                p_bg.classList.add('fireworks');
+                bgTimesUp(p_bg);
+            } else {
+                removeBg(p_bg, 'fireworks');
+            }
+            
+        }
+    }
+
+
+    function checkTimer() {
+        if (app.data.seconds > 0 ) return
+        
+        stopTimer();
+        bgFireworks(true);
+        console.log('it\'s ovah rovah');
+    }
+    function stopTimer() {
+        clearInterval(timeTicking);
+        console.log('timer stopped');
+    }
+
+    function startTimer(restart) {
+        var restart = app.data.restart;
+        
+        clearInterval(timeTicking);
+
+        bgFireworks(false);
+
+        // put the pause attribute in place
+        app.data.dataAttribute = 'data-pause';
+        app.data.btnText = 'Pause';
+        app.data.paused = false;
+
+        // check to see if we're paused or not
+        // reset the state if we're not paused
+        //console.log('app.data.seconds: ',app.data.seconds)
+        if ( restart ) app.data.seconds = count;
+        //console.log('app.data.seconds: ',app.data.seconds)
+        
+        app.render();
+
+        timeTicking = setInterval(runCountDown, 1000);
+    }
+    
+
+    // Run a function every 1,000ms (1s)
+    function runCountDown() {
+
+        app.data.seconds--;
+
+        app.render();
+
+        checkTimer();
+
+    };
+
+
+    function pauseTimer() {
+
+        app.data.dataAttribute = 'data-play';
+        app.data.btnText = 'Play';
+        app.data.restart = false;
+        app.data.paused = true;
+        stopTimer();
+        app.render();
+
+    }
+
+    function pausePlayTimer() {
+
+        var paused = app.data.paused;
+
+        if (!paused) {
+            pauseTimer();
+        } else {
+            startTimer();
+        }
+
+    }
+
+    function handleClick(event) {
+        
+        if (! event.target.matches('[data-timer]')) return;
+
+        if ( event.target.matches('[data-restart]')) {
+            app.data.restart = true;
+            startTimer();
+        }
+
+        if ( event.target.matches('[data-startStop]')) {
+            if (app.data.seconds === 0) return;
+            pausePlayTimer();
+        }
+    }
+
+    // make a Timer
+    var app = new Timer('#app', {
+        data: {
+            seconds: count,
+            dataAttribute: 'data-pause',
+            btnText: 'Pause',
+            restart: false, 
+            paused: false
+        },
+        template: formatMessage
+    });
+
+    startTimer();
+    document.addEventListener('click', handleClick);
+
+</script>
+</body>
+</html>

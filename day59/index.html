@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>A countdown</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 40em;
+			width: 88%;
+            background-color: rgba(106, 200, 243, 0.75);
+            font-family: "Open Sans", sans-serif;
+		}
+
+        .wrap {
+            padding: 0 1.5em;
+            border: #333 solid 1px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .time_remaining {
+            font-size: 1.5rem;
+        }
+	</style>
+</head>
+<body>
+
+    <div class="wrap">
+        <h1>The Final Countdown!</h1>
+        
+        
+        <div id="app" aria-live="polite"></div>
+    </div>
+
+	
+
+<script>
+
+    // set this to your desired time, in seconds
+    var count = 12;
+    var timeTicking;
+
+    /**
+     * State-based UI Component
+     * @param {String} selector The selector for the target element
+     * @param {Object} options  Component options
+     */
+    var Timer = function (selector, options) {
+        this.elem = document.querySelector(selector);
+        this.data = options.data;
+        this.template = options.template;
+    };
+
+    /**
+     * Render a new UI
+     */
+    Timer.prototype.render = function () {
+        this.elem.innerHTML = this.template(this.data);
+    };
+
+    function formatTime( props ) {
+        
+        return {
+            minutes: parseInt((props.seconds / 60), 10),
+            seconds: (props.seconds % 60).toString()
+        }
+    }
+
+    function formatMessage( props ) {
+        var time = formatTime(props);
+        var html;
+        if ( props.seconds < 1) {
+            html = `<p>
+                The end is here -- you have no time left... um, to wait.
+                <br><br>Well, maybe not so final. <button class="btn_wait">Wait again</button>
+            </p>`;
+            return html;
+        } else {
+            html = `<p>
+                The end is nigh - you have <span class="time_remaining">${time.minutes}:${time.seconds.padStart(2, '0')}</span> seconds left!
+            </p>`;
+            return html;
+        }
+    }
+
+
+    function stopTimer() {
+        if (app.data.seconds > 0 ) return
+        
+        clearInterval(timeTicking);
+        console.log('it\'s ovah rovah');
+    }
+
+    function startTimer() {
+        // start the timer with the beginning count
+        app.data.seconds = count;
+        
+        app.render();
+
+        timeTicking = setInterval(runCountDown, 1000);
+    }
+    
+
+    // Run a function every 1,000ms (1s)
+    function runCountDown() {
+
+        app.data.seconds--;
+        //console.log(app.data.seconds)
+
+        stopTimer();
+
+        app.render();
+    };
+
+    function handleClick(event) {
+        if (! event.target.matches('.btn_wait')) return;
+
+        startTimer();
+    }
+
+    // make a Timer
+    var app = new Timer('#app', {
+        data: {
+            seconds: count
+        },
+        template: formatMessage
+    });
+
+    startTimer();
+    document.addEventListener('click', handleClick);
+
+</script>
+</body>
+</html>

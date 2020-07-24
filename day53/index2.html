@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pirate articles, cached in local storage</title>
+
+    <style type="text/css">
+		body {
+			margin: 0 auto;
+			background-color: #000;
+			border: 6px dashed lightsteelblue;
+			font-family: "Open Sans", sans-serif;
+			min-height: calc(100vh - 12px);
+		}
+
+		.wrap {
+			max-width: 40em;
+			width: 88%;
+			margin: 1.5em auto;
+			padding: 1em 1.5em;
+			border: #333 solid 1px;
+			border-radius: 6px;
+			background-color: rgba(255,255,255, .8);
+		}
+
+.hdr--pub {
+    font-size: 2rem;
+    margin: .5rem 0 1rem;
+    text-align: center;
+}
+
+.hdr--tagline {
+    font-size: 1.25rem;
+    margin: .5rem 0 1rem;
+    font-style: italic;
+    text-align: center;
+}
+
+.hdr--attr {
+    font-size: 1rem;
+    margin: .5rem 0 1rem;
+    text-align: center;
+}
+
+        .hdr--stories {
+            font-size: 1.5rem;
+            margin: .5rem 0 1rem;
+        }
+
+        .top_stories {
+            margin: 0 0 2rem 0;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .top_stories li {
+            margin: 0 0 1.25rem 0;
+            padding: .5rem;
+            flex-basis: 45%;
+            background: rgba(255, 255, 255, .75);
+            border: #333 solid 1px;
+            border-radius: 5px;
+        }
+        .top_stories li:nth-child(even) {
+            margin-right: 0;
+        }
+
+        .abstract {
+            font-size: .875rem;
+            color: #666;
+            margin: .25rem 0 0;
+        }
+        .top_stories li img {
+            display: block;
+            width: 100%;
+            margin-bottom: .25rem;
+            border-radius: 3px;
+        }
+        .top_stories li a {
+            color: #333;
+            font-weight: 600;
+        }
+        .author {
+            font-size: .8375rem;
+            font-style: italic;
+        }
+        .author:before {
+            content: '\A';
+            display: block;
+            width: 100%;
+        }
+
+        .capital {
+            text-transform: capitalize;
+        }
+        time {
+            display: inline;
+            font-size: .75rem;
+            font-style: italic;
+        }
+        .technote {
+            text-align: center;
+        }
+           
+	</style> 
+</head>
+<body>
+    <div class="wrap">
+        <div id="app">
+            <p>Loading Arrrghlebargle</p>
+        </div>
+    </div>
+
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default%2Cfetch%2CNodeList.prototype.forEach"></script>
+<script>
+    console.log('Note! This now has an api call that fails a lot - on purpose, so keep refreshing to see its behavior in different circumstances.');
+/*!
+* Sanitize and encode all HTML in a user-submitted string
+* (c) 2018 Chris Ferdinandi, MIT License, https://gomakethings.com
+* @param  {String} str  The user-submitted string
+* @return {String} str  The sanitized string
+*/
+var sanitizeHTML = function (str) {
+var temp = document.createElement('div');
+temp.textContent = str;
+return temp.innerHTML;
+};
+    
+var main_elem = document.querySelector('#app');
+var endpoint = 'https://vanillajsacademy.com/apif/pirates.json';
+/**
+ * Dynamically vary the API endpoint so that if fails half the time
+ * @return {String} The API endpoint
+ */
+ var getEndpoint = function () {
+	var endpoint = 'https://vanillajsacademy.com/api/';
+	var random = Math.random();
+	if (random < 0.5) return endpoint + 'pirates.json';
+	return endpoint + 'fail.json';
+};
+
+var numStories = 5;
+var storageName = 'pirateTreasure'
+
+var storedData = localStorage.getItem(storageName);
+var storedObj = JSON.parse(storedData) || {};
+
+
+// utility to check if object is empty - returns true if empty
+function isEmpty(obj) {
+    for(var key in obj) {
+        if(obj.hasOwnProperty(key)) 
+            // normally this function is used as a boolean on isEmpty, 
+            // but I'm reversing it so that my variable will be true
+            // it it's NOT empty
+            return true;
+    }
+    return false;
+}
+// check stored object and store as boolean
+var storedObjCheck = isEmpty(storedObj);
+
+var isDataValid = function (saved, goodFor) {
+    // Check that there's data, and a timestamp key
+    if (!saved || !saved.data || !saved.timestamp) return false;
+
+    // Get the difference between the timestamp and current time
+    var difference = new Date().getTime() - saved.timestamp;
+
+    return difference < goodFor;
+};
+
+var tenseconds = 1000 * 10;
+var minute = 1000 * 60;
+var hour = 1000 * 60 * 60;
+var day = 1000 * 60 * 60 * 24;
+
+// check cache and store as boolean
+var validCache = isDataValid(storedObj, tenseconds);
+console.log('validCache',validCache);
+
+function articleSubset(allArticles) {
+    // just use the first 5 stories, or whatever numStories is set to
+    return allArticles.slice(0, numStories);
+}
+
+function getAuthor(story) {
+    var author;
+    story.byline === '' ? author = '<span class="author">The Scuttlebutt</span>' : author = '<span class="author">' + sanitizeHTML(story.author) + ' - ' + sanitizeHTML(story.category) + '<br>' + sanitizeHTML(story.pubdate) + '</span>';
+    return author
+}
+
+function getBlurb(article) {
+    var index = article.indexOf('.');
+    return article.slice(0, index) + '...';
+}
+
+
+function displayTopStories(data) {
+
+    var articles = articleSubset(data.articles);
+
+    // display the top stories
+    var headline = '<h1 class="hdr--pub">'+ data.publication +  '</h1>';
+    var subheadline = '<h2 class="hdr--tagline">'+ data.tagline +  '</h2>';
+    var pub_attr = '<h3 class="hdr--attr"><a href="' + data.attribution.url + '" target="_blank">'+ data.attribution.name +  '</a></h3>';
+
+    if ( !main_elem ) {
+        console.log('no app container!');
+        return false;
+    }
+
+    main_elem.innerHTML = headline + subheadline + pub_attr + '<ul class="top_stories">' + 
+    articles.map(function(story) {
+        //console.log(story)
+        // not all articles have a byline, 
+        // so we put in a default
+        var author = getAuthor(story);
+        var title = sanitizeHTML(story.title);
+        var pubDate = sanitizeHTML(story.pubdate);
+        var story = sanitizeHTML(story.article);
+        blurb = getBlurb(story);
+
+        return '<li><h2 class="story_title">' + title + '</h2><p>' + blurb +'</p><p>' + author + '</p></li>';
+    }).join('') + '</ul>';
+}
+
+function displayError(msg) {
+    main_elem.innerHTML = msg;
+}
+
+function fetchFail(err) {
+    // There was an error
+    console.warn('#FAIL!!!!', err);
+    // hold back the tears and don't break something
+    if (storedObjCheck) {
+        console.log('Ooops, the fetch failed - using stored data, whether it\'s expired or not.');
+        displayTopStories(storedObj.data);
+    } else {
+        displayError('<p>Sorry, the pirates are keel hauling someone right now.</p>');
+    }
+    
+}
+
+function storeData(data) {
+    var data = {
+        data: data,
+        timestamp: new Date().getTime()
+    }
+    localStorage.setItem(storageName, JSON.stringify(data));
+}
+
+function getTopStories(endpoint) {
+    
+fetch(getEndpoint()).then(function (response) {
+    // The API call was successful!
+    if (response.ok) {
+        return response.json();
+    } else {
+        return Promise.reject(response);
+    }
+}).then(function (data) {
+    // console.log(data);
+    storeData(data);
+    displayTopStories(data);
+    // 'data' is the JSON from our response
+}).catch(function (err) {
+    //console.log('the cat is: ' + category)
+    fetchFail(err)
+});
+}
+
+function insertAfter(referenceNode, newNode) {
+referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+}
+function procureData() {    
+if ( !storedObjCheck ) {
+    // stored object is empty, so we'll fetch
+    console.log('Fetched new data.')
+    getTopStories(endpoint);
+} else {
+    // check for expired 
+    // (this first part could be accounted for above with '&& validCache')
+    // but then I couldn't write different text for this particular case.
+    if (validCache) {
+        console.log('Using stored data.');
+        displayTopStories(storedObj.data);
+    } else {
+        console.log('Data expired, fetching for freshness.');
+        getTopStories(endpoint);
+    }
+    
+}
+}
+procureData();
+        
+
+</script>
+    
+</body>
+</html>

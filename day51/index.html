@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Form Autosave</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 40em;
+			width: 88%;
+            background-color: rgba(106, 200, 243, 0.75);
+            font-family: "Open Sans", sans-serif;
+		}
+
+        .wrap {
+            padding: 0 1.5em;
+            border: #333 solid 1px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+		label,
+		input,
+		textarea,
+        select {
+			display: block;
+			width: 100%;
+		}
+        
+        [type="checkbox"],
+		[type="radio"] {
+			display: inline;
+			width: auto;
+		}
+
+		input,
+		textarea,
+        select {
+			margin-bottom: 1em;
+		}
+
+		textarea {
+			height: 8em;
+		}
+	</style>
+</head>
+<body>
+
+    <div class="wrap">
+        <h1>Form Autosave - Other Input Types</h1>
+
+	<form class="save-me" id="save-me">
+
+		<label for="name">Name</label>
+		<input type="text" name="name" id="name">
+
+		<label for="address">Address</label>
+		<input type="text" name="address" id="address">
+
+		<label for="email">Email</label>
+		<input type="email" name="email" id="email">
+
+		<label for="hear-about-us">How did you hear about us?</label>
+		<select name="hear-about-us" id="hear-about-us">
+			<option value="">Please select one</option>
+			<option value="google">Google</option>
+			<option value="referral">Referred by a Friend</option>
+			<option value="tv">A TV Ad</option>
+			<option value="radio">A Radio Ad</option>
+		</select>
+
+		<label for="more">Additional thoughts?</label>
+		<textarea name="more" id="more"></textarea>
+
+		<p><strong>Do you agree to our terms of service?</strong></p>
+		<label>
+			<input type="radio" name="tos" value="yes">
+			Yes
+		</label>
+		<label>
+			<input type="radio" name="tos" value="no">
+			No
+		</label>
+
+		<p><strong>Pick your favorite super heros.</strong></p>
+
+		<label>
+			<input type="checkbox" name="spiderman">
+			Spiderman
+		</label>
+
+		<label>
+			<input type="checkbox" name="wonderwoman">
+			Wonder Woman
+		</label>
+
+		<label>
+			<input type="checkbox" name="blackpanther">
+			Black Panther
+		</label>
+
+		<p>
+			<button type="submit">Submit</button>
+		</p>
+
+	</form>
+    </div>
+
+	
+
+	<script>
+        
+        var formSaveMe = document.querySelector('#save-me');
+        // fsm is short for formSaveMe, or flying spaghetti monster.
+        var fsmInputs = Array.prototype.slice.call(document.querySelectorAll('#save-me input, #save-me textarea, #save-me select'));
+        // console.log(fsmInputs)
+        var fsmStorage = 'formSaveMeStorage';
+
+        // get local storage, parse it into fsmData, or set fsmData to an empty object
+        var storedData = localStorage.getItem(fsmStorage);
+        var fsmData = JSON.parse(storedData) || {};
+
+        // utility to check if object is empty - returns true if empty
+        function isEmpty(obj) {
+            for(var key in obj) {
+                if(obj.hasOwnProperty(key))
+                    return false;
+            }
+            return true;
+        }
+
+        // check field for id or name, or return null
+        function getID(el) {
+            if ( el.id.length > 0 ) {
+                return el.id;
+            }
+            if ( el.name.length > 0 ) {
+                return el.name;
+            } 
+            return null;
+        }
+
+        // pass it on object, a property and a value to update an object
+        function updateObject(obj, id, value) {
+            obj[id] = value;
+        }
+
+        function inputHandler(event) {
+            // check target, return if not form #save-me
+            var field = event.target;
+            // console.log(field);
+            
+            if (!field.closest('#save-me')) return;
+
+            // get ID or Name, or return
+            var fieldID = getID(field);
+            if ( !fieldID ) return
+
+            // get value to pass along
+            if ( field.type === 'checkbox' ) {
+                var fieldValue
+                field.checked ? fieldValue = field.name : fieldValue = '';
+            } else {
+                var fieldValue = field.value;
+                // console.log(fieldValue)
+            }
+
+            
+
+            // update the fsmData object with the property (ID), and value
+            updateObject(fsmData, fieldID, fieldValue);
+            // console.log(fsmData)
+            
+            // add object to local storage as a string
+            localStorage.setItem(fsmStorage, JSON.stringify(fsmData));
+        }
+
+        function loadData() {
+            // check to see if fsmData is empty or not
+            var objectEmpty = isEmpty(fsmData);
+            if ( objectEmpty ) return;
+            // console.log(fsmData)
+
+            // populate values for fields from local storage on page load
+            fsmInputs.forEach(function(el) {
+                // get the ID or NAME
+                var id = getID(el);
+                if ( !id ) return;
+
+                // get the value for that property in the object
+                var value = fsmData[id];
+
+                // if no value, return, update the field with that value
+                if ( !value ) return;
+                // console.log('type: ',el.type)
+                if ( el.type === 'radio' ) {
+                    value === el.value ? el.checked = true : el.checked = false
+                } else if ( el.type === 'checkbox' ) {
+                    value === el.name ? el.checked = true : el.checked = false
+                } else {
+                    el.value = value;
+                }
+                
+            });
+        }
+        loadData();
+
+        function submitHandler(storageObj) {
+            //event.preventDefault();
+            localStorage.removeItem(storageObj);
+        }
+
+        document.addEventListener('input', inputHandler);
+
+        formSaveMe.addEventListener('submit', function() {
+            submitHandler(fsmStorage)
+        });
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>MutationObserver test</title>
+
+	<style type="text/css">
+		body {
+			margin: 1em auto;
+			max-width: 40em;
+			width: 88%;
+            background-color: rgba(106, 200, 243, 0.75);
+            font-family: "Open Sans", sans-serif;
+		}
+
+        .wrap {
+            padding: 0 1.5em;
+            border: #333 solid 1px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+		label,
+		input,
+		textarea,
+        select {
+			display: block;
+			width: 100%;
+		}
+        
+        [type="checkbox"],
+		[type="radio"] {
+			display: inline;
+			width: auto;
+		}
+
+		input,
+		textarea,
+        select {
+			margin-bottom: 1em;
+		}
+
+		textarea {
+			height: 8em;
+		}
+    </style>
+    
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+var link1 = document.querySelector('.link1');
+var link2 = document.querySelector('.link2');
+var content1 = document.querySelector('.content1');
+var content2 = document.querySelector('.content2');
+var body = document.querySelector('body');
+console.log(body)
+
+link1.addEventListener('click', function() {
+    content1.style.display = 'block';
+    content2.style.display = 'none';
+    body.id = 'f11';
+console.log(body.id)
+});
+
+link2.addEventListener('click', function() {
+    content1.style.display = 'none';
+    content2.style.display = 'block';
+    body.id = 'f22';
+console.log(body.id)
+});
+
+
+// select the target node
+// we already have 'body' above //var target = document.querySelector('#some-id');
+
+// create an observer instance
+var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        //if (body.id === 'collection-5ea742c15474b84e54957085') {
+        if (body.id === 'f22') {
+            console.log('we have f22')
+        }
+    });
+});
+
+// configuration of the observer:
+var config = { attributes: true, childList: false, characterData: false }
+
+// pass in the target node, as well as the observer options
+observer.observe(body, config);
+});
+</script>
+<!--
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+        var theLogo = document.querySelector("img.Header-branding-logo");
+        var body = document.querySelector('body');
+        var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (body.id === 'collection-5ea742c15474b84e54957085') {
+            theLogo.src = "//static1.squarespace.com/static/5b7730d9cef3729cea3dfd5c/t/5efe712434e2691d9e55ad4f/1593733412274/StratfordGolf_logo-02.png";
+        } else {
+            theLogo.src = "//static1.squarespace.com/static/5b7730d9cef3729cea3dfd5c/t/5e7bc0a0ed03c045bba4aa69/1594225323882/?format=1500w";
+        }
+    });
+});
+
+// configuration of the observer:
+var config = { attributes: true, childList: false, characterData: false }
+
+// pass in the target node, as well as the observer options
+observer.observe(body, config);
+});
+</script>
+-->
+</head>
+<body id="f1">
+
+    <div class="wrap">
+        <h1>MutationObserver test</h1>
+        <p><a href="#1" class="link1">Click for content 1</a></p>
+        <p><a href="#2" class="link2">Click for content 2</a></p>
+
+        <div class="content1">
+            <p>
+                This is content 1
+            </p>
+        </div>
+        <div class="content2" style="display: none;">
+            <p>
+                This is content 2
+            </p>
+        </div>
+	
+    </div>
+
+	
+</body>
+</html>

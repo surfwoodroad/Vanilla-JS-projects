@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip yer Image</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+        box-sizing: border-box;
+        }
+        body {
+            background: #000;
+            font-family: 'Open Sans', Roboto, sans-serif;
+        }
+        .wrap {
+            max-width: 1600px;
+            margin: 2rem auto;
+        }
+        img {
+            max-width: 100%;
+        }
+        .pictures {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .picture {
+            width: 40%;
+            margin: 4rem 4%;
+            position: relative;
+            perspective: 1000px;
+        }
+        .picture img {
+            display: block;
+            transition: transform 0.8s;
+  transform-style: preserve-3d;
+        }
+        .flip-btn {
+            color: #fff;
+            display: block;
+            background-color: transparent;
+            border: #fff solid 1px;
+            background-color: #000;
+            font-weight: bold;
+        }
+        .flip-up, .flip-down {
+            padding: .4rem 0;
+            width: 100%;
+            position: relative;
+            z-index: 3;
+            font-size: 1.5rem;
+        }
+        .flip-left, .flip-right {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            padding: 0 .4rem;
+            z-index: 2;
+            font-size: 1.75rem;
+        }
+        .flip-left {
+            left: 0;
+        }
+        .flip-right {
+            right: 0;
+        }
+
+        .up {
+            transform: rotateX(180deg)
+        }
+        .down {
+            transform: rotateX(-180deg)
+        }
+        .left {
+            transform: rotateY(180deg)
+        }
+        .right {
+            transform: rotateY(-180deg)
+        }
+
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="pictures">
+            <div class="picture">
+                <button class="flip-btn flip-up" data-direction="flip-up">&#8593;</button>
+                <button class="flip-btn flip-left" data-direction="flip-left">&#8592;</button>
+                <img src="//surfwoodroad.com/images/P2230017_1000x.jpg" alt="Hawk">
+                <button class="flip-btn flip-right" data-direction="flip-right">&#8594;</button>
+                <button class="flip-btn flip-down" data-direction="flip-down">&#8595;</button>
+            </div>
+            <div class="picture">
+                <button class="flip-btn flip-up" data-direction="flip-up">&#8593;</button>
+                <button class="flip-btn flip-left" data-direction="flip-left">&#8592;</button>
+                <img src="//surfwoodroad.com/images/P2230017_1000x.jpg" alt="Hawk">
+                <button class="flip-btn flip-right" data-direction="flip-right">&#8594;</button>
+                <button class="flip-btn flip-down" data-direction="flip-down">&#8595;</button>
+            </div>
+            <div class="picture">
+                <button class="flip-btn flip-up" data-direction="flip-up">&#8593;</button>
+                <button class="flip-btn flip-left" data-direction="flip-left">&#8592;</button>
+                <img src="//surfwoodroad.com/images/P2230017_1000x.jpg" alt="Hawk">
+                <button class="flip-btn flip-right" data-direction="flip-right">&#8594;</button>
+                <button class="flip-btn flip-down" data-direction="flip-down">&#8595;</button>
+            </div>
+            <div class="picture">
+                <button class="flip-btn flip-up" data-direction="flip-up">&#8593;</button>
+                <button class="flip-btn flip-left" data-direction="flip-left">&#8592;</button>
+                <img src="//surfwoodroad.com/images/P2230017_1000x.jpg" alt="Hawk">
+                <button class="flip-btn flip-right" data-direction="flip-right">&#8594;</button>
+                <button class="flip-btn flip-down" data-direction="flip-down">&#8595;</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        var allDirections = ['flip-up', 'flip-down', 'flip-left', 'flip-right'];
+        
+        var flipImage = function(target) {
+
+            var allDirections2 = allDirections.slice();
+            var direction = target.dataset.direction;
+            var go = direction.substr(5);
+
+            var index = allDirections.indexOf(direction);
+
+            var directions = allDirections2.splice(index, 1);
+
+            allDirections2.forEach(function(flip) {
+                var flipClass = flip.substr(5);
+                target.parentElement.querySelector('img').classList.remove(flipClass);
+            });
+            target.parentElement.querySelector('img').classList.toggle(go);
+
+        }
+
+        var clickHandler = function() {
+            var target = event.target;
+            if ( ! target.matches('.flip-btn') ) return;
+
+            flipImage(target);
+        }
+
+        document.addEventListener('click', clickHandler)
+    </script>
+</body>
+</html>
